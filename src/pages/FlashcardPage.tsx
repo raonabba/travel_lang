@@ -6,6 +6,7 @@ import { courseColorClasses } from '../lib/colors'
 import { shuffle } from '../lib/shuffle'
 import { collectCardPool, collectUnlockedLessons } from '../lib/practice'
 import { speak, canSpeak } from '../lib/speech'
+import { shortsSearchUrl } from '../lib/youtube'
 import SpeakerButton from '../components/SpeakerButton'
 
 const DECK_SIZE = 10
@@ -181,7 +182,18 @@ export default function FlashcardPage() {
             {card.target}
           </p>
           {card.note && <p className="text-sm text-slate-400">{card.note}</p>}
-          <SpeakerButton text={card.target} lang={course.speechLang} />
+          <div className="flex items-center gap-2">
+            <SpeakerButton text={card.target} lang={course.speechLang} />
+            <a
+              href={shortsSearchUrl(`${card.target} ${card.kr}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex h-9 items-center gap-1 rounded-full border-2 border-slate-200 bg-white px-3 text-xs font-extrabold text-slate-600 transition hover:bg-slate-100 active:scale-95"
+            >
+              🎬 쇼츠 찾기
+            </a>
+          </div>
           <div className="mt-4 min-h-10 border-t-2 border-dashed border-slate-200 pt-4">
             {revealed ? (
               <p className="font-display text-xl font-bold text-slate-600">

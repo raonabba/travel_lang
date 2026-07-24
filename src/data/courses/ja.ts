@@ -90,4 +90,31 @@ export const jaCourse: Course = {
       buildLesson('ja-u4-l2', '취향과 계산', food2),
     ]),
   ],
+  channels: [
+    {
+      name: '日本語の森',
+      description: '2013년부터 이어온 일본어 교육 전문 채널. 문법 해설부터 JLPT 대비까지',
+      url: 'https://www.youtube.com/channel/UCVx6RFaEAg46xfAsD2zz16w',
+    },
+    {
+      name: '오오기와 틈틈이 일본어 공부 [오틈일]',
+      description: '캐주얼하고 재밌는 일상 회화 위주 학습',
+      url: 'https://www.youtube.com/channel/UCPtN_D043WoQ2uTWsK6ftIg',
+    },
+    {
+      name: '中田敦彦のYouTube大学',
+      description: '큰 자막 진행으로 일본어 리스닝 몰입 학습에 좋아요',
+      url: 'https://www.youtube.com/@NKTofficial',
+    },
+    {
+      name: '시원스쿨 일본어',
+      description: '체계적이고 초급자 친화적인 무료 강의',
+      url: 'https://www.youtube.com/@siwonjapan',
+    },
+    {
+      name: '일본어인강 유하다요',
+      description: '쉽고 재밌게 풀어주는 일본어 강의',
+      url: 'https://www.youtube.com/channel/UCmKVnKCKWy4d1EpOVml2doA',
+    },
+  ],
 }

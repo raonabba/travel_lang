@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TopBar from '../components/TopBar'
 import LessonNode from '../components/LessonNode'
+import ChannelList from '../components/ChannelList'
 import { useProgress, MAX_HEARTS } from '../state/progress'
 import { getCourse } from '../data/courses'
 import { courseColorClasses } from '../lib/colors'
@@ -66,6 +67,10 @@ export default function HomePage() {
             <span className="text-xs text-rose-500">완료 시 ❤️ 획득</span>
           </button>
         </div>
+
+        {course.channels && course.channels.length > 0 && (
+          <ChannelList channels={course.channels} />
+        )}
 
         {course.units.map((unit) => (
           <section key={unit.id} className="mb-12">

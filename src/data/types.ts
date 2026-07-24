@@ -46,6 +46,12 @@ export interface Unit {
   lessons: Lesson[]
 }
 
+export interface LearningChannel {
+  name: string
+  description: string
+  url: string
+}
+
 export interface Course {
   id: string
   title: string
@@ -56,6 +62,8 @@ export interface Course {
   speechLang: string
   comingSoon?: boolean
   units: Unit[]
+  /** Recommended external YouTube channels for further study */
+  channels?: LearningChannel[]
 }
 
 export type CourseColor = 'green' | 'blue' | 'orange'
