@@ -39,6 +39,8 @@ export interface Course {
   flag: string
   tagline: string
   color: CourseColor
+  /** BCP 47 language tag used for text-to-speech pronunciation, e.g. "ja-JP" */
+  speechLang: string
   comingSoon?: boolean
   units: Unit[]
 }

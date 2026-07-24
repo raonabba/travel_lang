@@ -1,10 +1,13 @@
 import type { WordBankExercise } from '../data/types'
+import { joinSpokenTokens } from '../lib/speech'
+import SpeakerButton from './SpeakerButton'
 
 interface Props {
   exercise: WordBankExercise
   tokenPool: { t: string; i: number }[]
   pickedIndices: number[]
   status: 'active' | 'correct' | 'incorrect'
+  lang: string
   onPick: (i: number) => void
   onRemove: (position: number) => void
 }
@@ -14,6 +17,7 @@ export default function WordBankExerciseView({
   tokenPool,
   pickedIndices,
   status,
+  lang,
   onPick,
   onRemove,
 }: Props) {
@@ -54,6 +58,15 @@ export default function WordBankExerciseView({
           </button>
         ))}
       </div>
+
+      {status !== 'active' && (
+        <div className="mb-6 flex items-center gap-3">
+          <p className="font-display font-extrabold text-slate-600">
+            {joinSpokenTokens(exercise.answer, lang)}
+          </p>
+          <SpeakerButton text={joinSpokenTokens(exercise.answer, lang)} lang={lang} />
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {tokenPool.map(({ t, i }) =>

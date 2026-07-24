@@ -6,6 +6,7 @@ export const esCourse: Course = {
   flag: '🇪🇸',
   tagline: '곧 만나요!',
   color: 'green',
+  speechLang: 'es-ES',
   comingSoon: true,
   units: [],
 }

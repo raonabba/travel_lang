@@ -71,6 +71,7 @@ export const jaCourse: Course = {
   flag: '🇯🇵',
   tagline: '여행하며 배우는 일본어',
   color: 'orange',
+  speechLang: 'ja-JP',
   units: [
     buildUnit('ja-u1', '인사 & 기본 표현', '기본 인사말과 예의 표현을 배워요', '🙏', [
       buildLesson('ja-u1-l1', '기본 인사', greetings1),

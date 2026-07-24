@@ -1,5 +1,6 @@
 import type { ChoiceExercise } from '../data/types'
 import type { ColorClasses } from '../lib/colors'
+import SpeakerButton from './SpeakerButton'
 
 interface Props {
   exercise: ChoiceExercise
@@ -7,6 +8,7 @@ interface Props {
   selected: string | null
   status: 'active' | 'correct' | 'incorrect'
   colors: ColorClasses
+  lang: string
   onSelect: (option: string) => void
 }
 
@@ -16,6 +18,7 @@ export default function ChoiceExerciseView({
   selected,
   status,
   colors,
+  lang,
   onSelect,
 }: Props) {
   return (
@@ -23,13 +26,16 @@ export default function ChoiceExerciseView({
       <h1 className="mb-6 font-display text-xl font-extrabold text-slate-800 md:text-2xl">
         {exercise.prompt}
       </h1>
-      <div className="mb-8 rounded-2xl border-2 border-slate-200 bg-slate-50 px-5 py-6 text-center">
-        <p className="font-display text-2xl font-extrabold text-slate-800">
-          {exercise.source}
-        </p>
-        {exercise.sourceNote && (
-          <p className="mt-1 text-sm text-slate-400">{exercise.sourceNote}</p>
-        )}
+      <div className="mb-8 flex items-center justify-center gap-3 rounded-2xl border-2 border-slate-200 bg-slate-50 px-5 py-6 text-center">
+        <div className="flex-1">
+          <p className="font-display text-2xl font-extrabold text-slate-800">
+            {exercise.source}
+          </p>
+          {exercise.sourceNote && (
+            <p className="mt-1 text-sm text-slate-400">{exercise.sourceNote}</p>
+          )}
+        </div>
+        <SpeakerButton text={exercise.source} lang={lang} />
       </div>
       <div className="grid gap-3">
         {options.map((option) => {

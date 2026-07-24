@@ -176,6 +176,7 @@ export default function LessonPage() {
             selected={choiceSelected}
             status={status}
             colors={colors}
+            lang={course.speechLang}
             onSelect={setChoiceSelected}
           />
         ) : (
@@ -184,6 +185,7 @@ export default function LessonPage() {
             tokenPool={optionSets[index] as TokenChip[]}
             pickedIndices={pickedIndices}
             status={status}
+            lang={course.speechLang}
             onPick={(i) => setPickedIndices((prev) => [...prev, i])}
             onRemove={(pos) =>
               setPickedIndices((prev) => prev.filter((_, idx) => idx !== pos))
