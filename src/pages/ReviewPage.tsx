@@ -1,58 +1,71 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useProgress } from '../state/progress'
-import { getLesson } from '../data/courses'
+import { getCourse } from '../data/courses'
 import { courseColorClasses } from '../lib/colors'
 import { shuffle } from '../lib/shuffle'
+import { collectExercisePool, collectUnlockedLessons } from '../lib/practice'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
-import LessonResult from '../components/LessonResult'
+
+const REVIEW_LENGTH = 8
+const REVIEW_XP = 8
 
 type Status = 'active' | 'correct' | 'incorrect'
 type TokenChip = { t: string; i: number }
 
-export default function LessonPage() {
-  const { unitId = '', lessonId = '' } = useParams()
+export default function ReviewPage() {
   const navigate = useNavigate()
-  const { selectedCourseId, hearts, loseHeart, completeLesson } = useProgress()
-  const { course, unit, lesson } = selectedCourseId
-    ? getLesson(selectedCourseId, unitId, lessonId)
-    : { course: undefined, unit: undefined, lesson: undefined }
+  const { selectedCourseId, isLessonUnlocked, gainXp } = useProgress()
+  const course = selectedCourseId ? getCourse(selectedCourseId) : undefined
 
-  const [index, setIndex] = useState(0)
-  const [status, setStatus] = useState<Status>('active')
-  const [mistakes, setMistakes] = useState(0)
-  const [heartsLeft, setHeartsLeft] = useState(hearts)
-  const [finished, setFinished] = useState<'success' | 'fail' | null>(null)
-  const [choiceSelected, setChoiceSelected] = useState<string | null>(null)
-  const [pickedIndices, setPickedIndices] = useState<number[]>([])
-  const [attempt, setAttempt] = useState(0)
-
-  useEffect(() => {
-    if (hearts <= 0) {
-      navigate('/learn', { replace: true })
-    }
+  const exercises = useMemo(() => {
+    if (!course) return []
+    const pool = collectExercisePool(collectUnlockedLessons(course, isLessonUnlocked))
+    return shuffle(pool).slice(0, REVIEW_LENGTH)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [course])
 
   const optionSets = useMemo(() => {
-    if (!lesson) return []
-    return lesson.exercises.map((ex): string[] | TokenChip[] =>
+    return exercises.map((ex): string[] | TokenChip[] =>
       ex.type === 'choice'
         ? shuffle(ex.options)
         : shuffle(ex.tokens.map((t, i) => ({ t, i }))),
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lesson, attempt])
+  }, [exercises])
 
-  if (!course || !unit || !lesson) {
+  const [index, setIndex] = useState(0)
+  const [status, setStatus] = useState<Status>('active')
+  const [choiceSelected, setChoiceSelected] = useState<string | null>(null)
+  const [pickedIndices, setPickedIndices] = useState<number[]>([])
+  const [finished, setFinished] = useState(false)
+
+  if (!course) {
     return (
       <div className="flex min-h-full flex-col items-center justify-center gap-4 p-8 text-center">
-        <p className="text-slate-500">레슨을 찾을 수 없습니다.</p>
+        <p className="text-slate-500">먼저 배울 언어를 선택해주세요.</p>
+        <button
+          type="button"
+          onClick={() => navigate('/courses')}
+          className="rounded-2xl bg-emerald-500 px-6 py-3 font-display font-extrabold text-white"
+        >
+          코스 선택하기
+        </button>
+      </div>
+    )
+  }
+
+  const colors = courseColorClasses[course.color]
+
+  if (exercises.length === 0) {
+    return (
+      <div className="flex min-h-full flex-col items-center justify-center gap-4 p-8 text-center">
+        <p className="text-slate-500">아직 복습할 내용이 없어요. 레슨을 먼저 진행해보세요!</p>
         <button
           type="button"
           onClick={() => navigate('/learn')}
-          className="font-bold text-emerald-600"
+          className="rounded-2xl bg-emerald-500 px-6 py-3 font-display font-extrabold text-white"
         >
           홈으로
         </button>
@@ -60,39 +73,32 @@ export default function LessonPage() {
     )
   }
 
-  const colors = courseColorClasses[course.color]
-  const total = lesson.exercises.length
-  const exercise = lesson.exercises[index]
-
-  if (finished === 'success') {
+  if (finished) {
     return (
-      <LessonResult
-        outcome="success"
-        xpEarned={mistakes === 0 ? 15 : 10}
-        mistakes={mistakes}
-        onContinue={() => navigate('/learn')}
-      />
+      <div className="flex min-h-full flex-col items-center justify-center gap-6 bg-white px-6 text-center">
+        <span className="text-7xl">🔁</span>
+        <h1 className="font-display text-3xl font-extrabold text-slate-800">
+          복습 완료!
+        </h1>
+        <div className="rounded-2xl bg-yellow-50 px-6 py-3">
+          <p className="font-display text-2xl font-extrabold text-yellow-500">
+            +{REVIEW_XP} XP
+          </p>
+        </div>
+        <p className="text-sm text-slate-400">하트 소모 없이 복습했어요</p>
+        <button
+          type="button"
+          onClick={() => navigate('/learn')}
+          className="mt-4 w-full max-w-xs rounded-2xl bg-emerald-500 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
+        >
+          홈으로
+        </button>
+      </div>
     )
   }
 
-  if (finished === 'fail') {
-    return (
-      <LessonResult
-        outcome="fail"
-        onHome={() => navigate('/learn')}
-        onRetry={() => {
-          setIndex(0)
-          setMistakes(0)
-          setHeartsLeft(hearts)
-          setStatus('active')
-          setChoiceSelected(null)
-          setPickedIndices([])
-          setFinished(null)
-          setAttempt((a) => a + 1)
-        }}
-      />
-    )
-  }
+  const exercise = exercises[index]
+  const total = exercises.length
 
   function resetExerciseState() {
     setStatus('active')
@@ -108,25 +114,13 @@ export default function LessonPage() {
       const words = pickedIndices.map((i) => exercise.tokens[i])
       correct = JSON.stringify(words) === JSON.stringify(exercise.answer)
     }
-
-    if (correct) {
-      setStatus('correct')
-    } else {
-      setStatus('incorrect')
-      setMistakes((m) => m + 1)
-      loseHeart()
-      setHeartsLeft((h) => Math.max(0, h - 1))
-    }
+    setStatus(correct ? 'correct' : 'incorrect')
   }
 
   function handleContinue() {
-    if (status === 'incorrect' && heartsLeft <= 0) {
-      setFinished('fail')
-      return
-    }
     if (index + 1 >= total) {
-      completeLesson(course!.id, lesson!.id, mistakes === 0)
-      setFinished('success')
+      gainXp(REVIEW_XP)
+      setFinished(true)
       return
     }
     setIndex((i) => i + 1)
@@ -149,15 +143,13 @@ export default function LessonPage() {
         >
           ×
         </button>
+        <p className="shrink-0 text-xs font-extrabold text-slate-400">복습 모드 · 하트 소모 없음</p>
         <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
           <div
-            className={`h-full ${colors.bg} rounded-full transition-all`}
+            className="h-full rounded-full bg-sky-400 transition-all"
             style={{ width: `${(index / total) * 100}%` }}
           />
         </div>
-        <span className="flex items-center gap-1 font-display font-extrabold text-rose-500">
-          ❤️ {heartsLeft}
-        </span>
       </div>
 
       <div className="mx-auto w-full max-w-md flex-1 px-4 py-8">
@@ -205,7 +197,7 @@ export default function LessonPage() {
                 onClick={checkAnswer}
                 className={`rounded-2xl px-8 py-3 font-display font-extrabold text-white transition ${
                   canCheck
-                    ? `${colors.bg} shadow-[0_4px_0_0_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-none`
+                    ? 'bg-sky-400 shadow-[0_4px_0_0_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-none'
                     : 'cursor-not-allowed bg-slate-200 text-slate-400'
                 }`}
               >

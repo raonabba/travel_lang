@@ -41,7 +41,32 @@ export default function HomePage() {
     <div className="min-h-full bg-white pb-28">
       <TopBar />
 
-      <div className="mx-auto max-w-md px-4 pt-8">
+      <div className="mx-auto max-w-md px-4 pt-6">
+        <div className="mb-8 grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/review')}
+            className="flex flex-col items-center gap-1 rounded-2xl border-2 border-sky-200 bg-sky-50 px-3 py-4 text-center transition hover:bg-sky-100 active:scale-[0.98]"
+          >
+            <span className="text-2xl">🔁</span>
+            <span className="font-display text-sm font-extrabold text-sky-700">
+              복습하기
+            </span>
+            <span className="text-xs text-sky-500">하트 소모 없음</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/flashcards')}
+            className="flex flex-col items-center gap-1 rounded-2xl border-2 border-rose-200 bg-rose-50 px-3 py-4 text-center transition hover:bg-rose-100 active:scale-[0.98]"
+          >
+            <span className="text-2xl">🗂️</span>
+            <span className="font-display text-sm font-extrabold text-rose-700">
+              단어 암기
+            </span>
+            <span className="text-xs text-rose-500">완료 시 ❤️ 획득</span>
+          </button>
+        </div>
+
         {course.units.map((unit) => (
           <section key={unit.id} className="mb-12">
             <div
@@ -95,18 +120,27 @@ export default function HomePage() {
 
       {showNoHearts && (
         <div className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-rose-200 bg-rose-50 px-4 py-4">
-          <div className="mx-auto flex max-w-md items-center justify-between gap-4">
+          <div className="mx-auto flex max-w-md flex-col gap-3">
             <p className="text-sm font-bold text-rose-600">
               하트가 모두 소진됐어요! 약 {minutesLeft}분 후 하트가 채워져요. (최대{' '}
-              {MAX_HEARTS}개)
+              {MAX_HEARTS}개) 단어 암기 게임을 완료하면 바로 하트를 얻을 수 있어요.
             </p>
-            <button
-              type="button"
-              onClick={() => setShowNoHearts(false)}
-              className="shrink-0 rounded-xl bg-rose-500 px-4 py-2 text-sm font-extrabold text-white"
-            >
-              확인
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/flashcards')}
+                className="flex-1 rounded-xl bg-rose-500 px-4 py-2 text-sm font-extrabold text-white"
+              >
+                단어 암기하고 하트 얻기
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowNoHearts(false)}
+                className="shrink-0 rounded-xl border-2 border-rose-200 px-4 py-2 text-sm font-extrabold text-rose-500"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -3,6 +3,8 @@ import { ProgressProvider, useProgress } from './state/progress'
 import CourseSelectPage from './pages/CourseSelectPage'
 import HomePage from './pages/HomePage'
 import LessonPage from './pages/LessonPage'
+import ReviewPage from './pages/ReviewPage'
+import FlashcardPage from './pages/FlashcardPage'
 
 function RootRedirect() {
   const { selectedCourseId } = useProgress()
@@ -18,6 +20,8 @@ function App() {
           <Route path="/courses" element={<CourseSelectPage />} />
           <Route path="/learn" element={<HomePage />} />
           <Route path="/lesson/:unitId/:lessonId" element={<LessonPage />} />
+          <Route path="/review" element={<ReviewPage />} />
+          <Route path="/flashcards" element={<FlashcardPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </HashRouter>

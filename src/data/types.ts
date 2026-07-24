@@ -19,10 +19,23 @@ export interface WordBankExercise {
 
 export type Exercise = ChoiceExercise | WordBankExercise
 
+export interface Card {
+  /** Korean phrase (the learner's native language) */
+  kr: string
+  /** Target-language phrase */
+  target: string
+  /** Optional pronunciation hint (e.g. romaji) */
+  note?: string
+  /** Target-language phrase split into chunks for the word-bank exercise */
+  tokens: string[]
+}
+
 export interface Lesson {
   id: string
   title: string
   exercises: Exercise[]
+  /** Source vocabulary cards, reused by review mode and the flashcard game */
+  cards: Card[]
 }
 
 export interface Unit {

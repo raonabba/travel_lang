@@ -1,15 +1,6 @@
-import type { Exercise, Lesson, Unit } from './types'
+import type { Card, Exercise, Lesson, Unit } from './types'
 
-export interface Card {
-  /** Korean phrase (the learner's native language) */
-  kr: string
-  /** Target-language phrase */
-  target: string
-  /** Optional pronunciation hint (e.g. romaji) */
-  note?: string
-  /** Target-language phrase split into chunks for the word-bank exercise */
-  tokens: string[]
-}
+export type { Card }
 
 function rotate<T>(arr: T[], offset: number): T[] {
   if (arr.length === 0) return arr
@@ -55,7 +46,7 @@ export function buildLesson(id: string, title: string, cards: Card[]): Lesson {
   const exercises = cards.map((_, i) =>
     i % 2 === 0 ? buildChoice(cards, i) : buildWordBank(cards, i),
   )
-  return { id, title, exercises }
+  return { id, title, exercises, cards }
 }
 
 export function buildUnit(

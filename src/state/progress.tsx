@@ -78,6 +78,8 @@ interface ProgressContextValue {
   selectCourse: (id: string) => void
   loseHeart: () => void
   refillHearts: () => void
+  gainHearts: (amount: number) => void
+  gainXp: (amount: number) => void
   completeLesson: (courseId: string, lessonId: string, perfect: boolean) => void
   isLessonUnlocked: (course: Course, unitId: string, lessonId: string) => boolean
 }
@@ -118,6 +120,12 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         }),
       refillHearts: () =>
         setData((d) => ({ ...d, hearts: MAX_HEARTS, heartsUpdatedAt: Date.now() })),
+      gainHearts: (amount: number) =>
+        setData((d) => {
+          const have = currentHearts(d.hearts, d.heartsUpdatedAt)
+          return { ...d, hearts: Math.min(MAX_HEARTS, have + amount) }
+        }),
+      gainXp: (amount: number) => setData((d) => ({ ...d, xp: d.xp + amount })),
       completeLesson: (courseId: string, lessonId: string, perfect: boolean) =>
         setData((d) => {
           const key = `${courseId}:${lessonId}`
