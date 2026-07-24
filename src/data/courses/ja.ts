@@ -73,22 +73,50 @@ export const jaCourse: Course = {
   color: 'orange',
   speechLang: 'ja-JP',
   units: [
-    buildUnit('ja-u1', '인사 & 기본 표현', '기본 인사말과 예의 표현을 배워요', '🙏', [
-      buildLesson('ja-u1-l1', '기본 인사', greetings1),
-      buildLesson('ja-u1-l2', '자기소개', greetings2),
-    ]),
-    buildUnit('ja-u2', '공항 & 교통', '공항에서 목적지까지 이동해봐요', '✈️', [
-      buildLesson('ja-u2-l1', '공항에서', airport1),
-      buildLesson('ja-u2-l2', '대중교통 이용', airport2),
-    ]),
-    buildUnit('ja-u3', '숙소 & 길찾기', '체크인부터 길 묻기까지', '🏨', [
-      buildLesson('ja-u3-l1', '호텔 체크인', hotel1),
-      buildLesson('ja-u3-l2', '길 찾기', hotel2),
-    ]),
-    buildUnit('ja-u4', '식당 & 음식', '주문부터 계산까지 완벽하게', '🍜', [
-      buildLesson('ja-u4-l1', '식당에서 주문하기', food1),
-      buildLesson('ja-u4-l2', '취향과 계산', food2),
-    ]),
+    buildUnit(
+      'ja-u1',
+      '인사 & 기본 표현',
+      '기본 인사말과 예의 표현을 배워요',
+      '🙏',
+      [
+        buildLesson('ja-u1-l1', '기본 인사', greetings1),
+        buildLesson('ja-u1-l2', '자기소개', greetings2),
+      ],
+      { videoId: 'HrXSR7WcDho', title: '일본어 인사말 (아침,점심,저녁)' },
+    ),
+    buildUnit(
+      'ja-u2',
+      '공항 & 교통',
+      '공항에서 목적지까지 이동해봐요',
+      '✈️',
+      [
+        buildLesson('ja-u2-l1', '공항에서', airport1),
+        buildLesson('ja-u2-l2', '대중교통 이용', airport2),
+      ],
+      { videoId: '6D44Um8dMH0', title: '공항에서 쓰는 일본어 표현 7가지' },
+    ),
+    buildUnit(
+      'ja-u3',
+      '숙소 & 길찾기',
+      '체크인부터 길 묻기까지',
+      '🏨',
+      [
+        buildLesson('ja-u3-l1', '호텔 체크인', hotel1),
+        buildLesson('ja-u3-l2', '길 찾기', hotel2),
+      ],
+      { videoId: 'nTPWW0UDHW4', title: '호텔 체크인 필수 일본어 문장' },
+    ),
+    buildUnit(
+      'ja-u4',
+      '식당 & 음식',
+      '주문부터 계산까지 완벽하게',
+      '🍜',
+      [
+        buildLesson('ja-u4-l1', '식당에서 주문하기', food1),
+        buildLesson('ja-u4-l2', '취향과 계산', food2),
+      ],
+      { videoId: 'EdCzDXIQ7II', title: '일본 식당 직원에게 반드시 듣는 말' },
+    ),
   ],
   channels: [
     {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import TopBar from '../components/TopBar'
 import LessonNode from '../components/LessonNode'
 import ChannelList from '../components/ChannelList'
+import ShortEmbed from '../components/ShortEmbed'
 import { useProgress, MAX_HEARTS } from '../state/progress'
 import { getCourse } from '../data/courses'
 import { courseColorClasses } from '../lib/colors'
@@ -87,6 +88,8 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+
+            {unit.relatedShort && <ShortEmbed short={unit.relatedShort} />}
 
             <div className="flex flex-col items-center gap-10">
               {unit.lessons.map((lesson) => {

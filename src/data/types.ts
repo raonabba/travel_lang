@@ -38,12 +38,19 @@ export interface Lesson {
   cards: Card[]
 }
 
+export interface RelatedShort {
+  videoId: string
+  title: string
+}
+
 export interface Unit {
   id: string
   title: string
   description: string
   icon: string
   lessons: Lesson[]
+  /** A real, verified YouTube Short related to this unit's topic */
+  relatedShort?: RelatedShort
 }
 
 export interface LearningChannel {

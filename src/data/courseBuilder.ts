@@ -1,4 +1,4 @@
-import type { Card, Exercise, Lesson, Unit } from './types'
+import type { Card, Exercise, Lesson, RelatedShort, Unit } from './types'
 
 export type { Card }
 
@@ -55,6 +55,7 @@ export function buildUnit(
   description: string,
   icon: string,
   lessons: Lesson[],
+  relatedShort?: RelatedShort,
 ): Unit {
-  return { id, title, description, icon, lessons }
+  return { id, title, description, icon, lessons, relatedShort }
 }
