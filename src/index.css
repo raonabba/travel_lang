@@ -1,9 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
-  --font-body: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans KR",
+    ui-rounded, system-ui, sans-serif;
+  --font-body:
+    "Apple SD Gothic Neo", Pretendard, "Malgun Gothic", "Noto Sans KR",
+    system-ui, -apple-system, sans-serif;
 }
 
 html,
