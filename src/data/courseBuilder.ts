@@ -1,4 +1,4 @@
-import type { Card, Exercise, Lesson, RelatedShort, Unit } from './types'
+import type { Card, Exercise, Lesson, RelatedShort, TokenChunk, Unit } from './types'
 
 export type { Card }
 
@@ -6,6 +6,16 @@ function rotate<T>(arr: T[], offset: number): T[] {
   if (arr.length === 0) return arr
   const n = offset % arr.length
   return [...arr.slice(n), ...arr.slice(0, n)]
+}
+
+function buildLearn(card: Card): Exercise {
+  return {
+    type: 'learn',
+    kr: card.kr,
+    target: card.target,
+    note: card.note,
+    krPronunciation: card.krPronunciation,
+  }
 }
 
 function buildChoice(cards: Card[], index: number): Exercise {
@@ -20,6 +30,7 @@ function buildChoice(cards: Card[], index: number): Exercise {
     prompt: '이 표현의 뜻은 무엇인가요?',
     source: card.target,
     sourceNote: card.note,
+    sourcePronunciation: card.krPronunciation,
     options,
     answer: card.kr,
   }
@@ -27,18 +38,22 @@ function buildChoice(cards: Card[], index: number): Exercise {
 
 function buildWordBank(cards: Card[], index: number): Exercise {
   const card = cards[index]
+  const cardTexts = new Set(card.tokens.map((t) => t.text))
   const otherTokens = cards
     .filter((_, i) => i !== index)
     .flatMap((c) => c.tokens)
-    .filter((t) => !card.tokens.includes(t))
+    .filter((t) => !cardTexts.has(t.text))
   const distractorTokens = rotate(otherTokens, index).slice(0, 3)
-  const tokens = rotate([...card.tokens, ...distractorTokens], (index * 2) % Math.max(card.tokens.length + distractorTokens.length, 1))
+  const tokens: TokenChunk[] = rotate(
+    [...card.tokens, ...distractorTokens],
+    (index * 2) % Math.max(card.tokens.length + distractorTokens.length, 1),
+  )
   return {
     type: 'wordbank',
     prompt: '이 문장을 번역하세요',
     source: card.kr,
     tokens,
-    answer: card.tokens,
+    answer: card.tokens.map((t) => t.text),
   }
 }
 
@@ -48,21 +63,24 @@ function buildSpeak(card: Card): Exercise {
     prompt: '이 표현을 소리 내어 말해보세요',
     answer: card.target,
     note: card.note,
+    krPronunciation: card.krPronunciation,
   }
 }
 
 /**
- * Each card is taught word-first: recognize its meaning (choice) before
- * having to actively reconstruct it (word bank), so a sentence is never
- * the very first thing the learner sees. One speaking check closes out
- * the lesson.
+ * Each card is taught word-first: a plain "learn" step introduces the
+ * meaning before any quiz, then recognition (choice), then active
+ * reconstruction (word bank), then a speaking check — so a sentence is
+ * never the very first thing the learner sees, and every card gets its
+ * own speaking practice.
  */
 export function buildLesson(id: string, title: string, cards: Card[]): Lesson {
   const exercises = cards.flatMap((_, i) => [
+    buildLearn(cards[i]),
     buildChoice(cards, i),
     buildWordBank(cards, i),
+    buildSpeak(cards[i]),
   ])
-  exercises.push(buildSpeak(cards[0]))
   return { id, title, exercises, cards }
 }
 

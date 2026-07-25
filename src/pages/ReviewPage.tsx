@@ -7,13 +7,17 @@ import { shuffle } from '../lib/shuffle'
 import { collectExercisePool, collectUnlockedLessons } from '../lib/practice'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
-import type { ChoiceExercise, WordBankExercise as WordBankExerciseType } from '../data/types'
+import type {
+  ChoiceExercise,
+  TokenChunk,
+  WordBankExercise as WordBankExerciseType,
+} from '../data/types'
 
 const REVIEW_LENGTH = 8
 const REVIEW_XP = 8
 
 type Status = 'active' | 'correct' | 'incorrect'
-type TokenChip = { t: string; i: number }
+type TokenPoolEntry = { chunk: TokenChunk; i: number }
 type ReviewExercise = ChoiceExercise | WordBankExerciseType
 
 export default function ReviewPage() {
@@ -32,10 +36,10 @@ export default function ReviewPage() {
   }, [course])
 
   const optionSets = useMemo(() => {
-    return exercises.map((ex): string[] | TokenChip[] =>
+    return exercises.map((ex): string[] | TokenPoolEntry[] =>
       ex.type === 'choice'
         ? shuffle(ex.options)
-        : shuffle(ex.tokens.map((t, i) => ({ t, i }))),
+        : shuffle(ex.tokens.map((chunk, i) => ({ chunk, i }))),
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exercises])
@@ -115,7 +119,7 @@ export default function ReviewPage() {
     if (exercise.type === 'choice') {
       correct = choiceSelected === exercise.answer
     } else {
-      const words = pickedIndices.map((i) => exercise.tokens[i])
+      const words = pickedIndices.map((i) => exercise.tokens[i].text)
       correct = JSON.stringify(words) === JSON.stringify(exercise.answer)
     }
     setStatus(correct ? 'correct' : 'incorrect')
@@ -170,7 +174,7 @@ export default function ReviewPage() {
         ) : (
           <WordBankExerciseView
             exercise={exercise}
-            tokenPool={optionSets[index] as TokenChip[]}
+            tokenPool={optionSets[index] as TokenPoolEntry[]}
             pickedIndices={pickedIndices}
             status={status}
             lang={course.speechLang}

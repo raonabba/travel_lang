@@ -7,14 +7,15 @@ import { shuffle } from '../lib/shuffle'
 import { getNextLesson } from '../lib/practice'
 import { speak, joinSpokenTokens } from '../lib/speech'
 import { canRecognizeSpeech } from '../lib/speechRecognition'
+import LearnExerciseView from '../components/LearnExerciseView'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
 import SpeakExerciseView from '../components/SpeakExerciseView'
 import LessonResult from '../components/LessonResult'
-import type { Exercise } from '../data/types'
+import type { Exercise, TokenChunk } from '../data/types'
 
 type Status = 'active' | 'correct' | 'incorrect'
-type TokenChip = { t: string; i: number }
+type TokenPoolEntry = { chunk: TokenChunk; i: number }
 
 export default function LessonPage() {
   const { unitId = '', lessonId = '' } = useParams()
@@ -59,11 +60,11 @@ export default function LessonPage() {
   const [pickedIndices, setPickedIndices] = useState<number[]>([])
 
   const optionSets = useMemo(() => {
-    return exercises.map((ex): string[] | TokenChip[] | null =>
+    return exercises.map((ex): string[] | TokenPoolEntry[] | null =>
       ex.type === 'choice'
         ? shuffle(ex.options)
         : ex.type === 'wordbank'
-          ? shuffle(ex.tokens.map((t, i) => ({ t, i })))
+          ? shuffle(ex.tokens.map((chunk, i) => ({ chunk, i })))
           : null,
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,7 +75,9 @@ export default function LessonPage() {
 
   useEffect(() => {
     if (!course || !exercise || finished) return
-    if (exercise.type === 'choice') {
+    if (exercise.type === 'learn') {
+      speak(exercise.target, course.speechLang)
+    } else if (exercise.type === 'choice') {
       speak(exercise.source, course.speechLang)
     } else if (exercise.type === 'wordbank') {
       speak(joinSpokenTokens(exercise.answer, course.speechLang), course.speechLang)
@@ -134,12 +137,12 @@ export default function LessonPage() {
   }
 
   function checkAnswer() {
-    if (exercise.type === 'speak') return
+    if (exercise.type !== 'choice' && exercise.type !== 'wordbank') return
     let correct = false
     if (exercise.type === 'choice') {
       correct = choiceSelected === exercise.answer
     } else {
-      const words = pickedIndices.map((i) => exercise.tokens[i])
+      const words = pickedIndices.map((i) => exercise.tokens[i].text)
       correct = JSON.stringify(words) === JSON.stringify(exercise.answer)
     }
     if (correct) {
@@ -194,7 +197,13 @@ export default function LessonPage() {
       </div>
 
       <div className="mx-auto w-full max-w-md flex-1 px-4 py-8">
-        {exercise.type === 'choice' ? (
+        {exercise.type === 'learn' ? (
+          <LearnExerciseView
+            exercise={exercise}
+            lang={course.speechLang}
+            colors={colors}
+          />
+        ) : exercise.type === 'choice' ? (
           <ChoiceExerciseView
             exercise={exercise}
             options={optionSets[index] as string[]}
@@ -207,7 +216,7 @@ export default function LessonPage() {
         ) : exercise.type === 'wordbank' ? (
           <WordBankExerciseView
             exercise={exercise}
-            tokenPool={optionSets[index] as TokenChip[]}
+            tokenPool={optionSets[index] as TokenPoolEntry[]}
             pickedIndices={pickedIndices}
             status={status}
             lang={course.speechLang}
@@ -237,23 +246,36 @@ export default function LessonPage() {
         }`}
       >
         <div className="mx-auto flex max-w-md items-center justify-between gap-4">
-          {status === 'active' && exercise.type !== 'speak' && (
+          {exercise.type === 'learn' && (
             <>
               <span />
               <button
                 type="button"
-                disabled={!canCheck}
-                onClick={checkAnswer}
-                className={`rounded-2xl px-8 py-3 font-display font-extrabold text-white transition ${
-                  canCheck
-                    ? `${colors.bg} shadow-[0_4px_0_0_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-none`
-                    : 'cursor-not-allowed bg-slate-200 text-slate-400'
-                }`}
+                onClick={handleContinue}
+                className={`rounded-2xl px-8 py-3 font-display font-extrabold text-white transition ${colors.bg} shadow-[0_4px_0_0_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-none`}
               >
-                확인
+                다음
               </button>
             </>
           )}
+          {status === 'active' &&
+            (exercise.type === 'choice' || exercise.type === 'wordbank') && (
+              <>
+                <span />
+                <button
+                  type="button"
+                  disabled={!canCheck}
+                  onClick={checkAnswer}
+                  className={`rounded-2xl px-8 py-3 font-display font-extrabold text-white transition ${
+                    canCheck
+                      ? `${colors.bg} shadow-[0_4px_0_0_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-none`
+                      : 'cursor-not-allowed bg-slate-200 text-slate-400'
+                  }`}
+                >
+                  확인
+                </button>
+              </>
+            )}
           {status === 'correct' && (
             <>
               <p className="font-display font-extrabold text-emerald-600">
@@ -276,7 +298,9 @@ export default function LessonPage() {
                   ? exercise.answer
                   : exercise.type === 'wordbank'
                     ? exercise.answer.join(' ')
-                    : exercise.answer}
+                    : exercise.type === 'speak'
+                      ? exercise.answer
+                      : ''}
               </p>
               <button
                 type="button"

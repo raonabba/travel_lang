@@ -7,8 +7,6 @@ import { useProgress } from '../state/progress'
 import { getCourse, getLesson } from '../data/courses'
 import { courseColorClasses } from '../lib/colors'
 
-const SNAKE_OFFSETS = [0, 56, 84, 56, 0, -56, -84, -56]
-
 export default function HomePage() {
   const navigate = useNavigate()
   const { selectedCourseId, completedLessonIds, isLessonUnlocked, lessonPosition } =
@@ -79,28 +77,39 @@ export default function HomePage() {
           </button>
         )}
 
-        <div className="mb-8 grid grid-cols-2 gap-3">
+        <div className="mb-8 grid grid-cols-3 gap-2">
           <button
             type="button"
             onClick={() => navigate('/review')}
-            className="flex flex-col items-center gap-1 rounded-2xl border-2 border-sky-200 bg-sky-50 px-3 py-4 text-center transition hover:bg-sky-100 active:scale-[0.98]"
+            className="flex flex-col items-center gap-1 rounded-2xl border-2 border-sky-200 bg-sky-50 px-2 py-4 text-center transition hover:bg-sky-100 active:scale-[0.98]"
           >
             <span className="text-2xl">🔁</span>
-            <span className="font-display text-sm font-extrabold text-sky-700">
+            <span className="font-display text-xs font-extrabold text-sky-700">
               복습하기
             </span>
-            <span className="text-xs text-sky-500">추가 XP 획득</span>
+            <span className="text-[10px] text-sky-500">추가 XP</span>
           </button>
           <button
             type="button"
             onClick={() => navigate('/flashcards')}
-            className="flex flex-col items-center gap-1 rounded-2xl border-2 border-rose-200 bg-rose-50 px-3 py-4 text-center transition hover:bg-rose-100 active:scale-[0.98]"
+            className="flex flex-col items-center gap-1 rounded-2xl border-2 border-rose-200 bg-rose-50 px-2 py-4 text-center transition hover:bg-rose-100 active:scale-[0.98]"
           >
             <span className="text-2xl">🗂️</span>
-            <span className="font-display text-sm font-extrabold text-rose-700">
+            <span className="font-display text-xs font-extrabold text-rose-700">
               단어 암기
             </span>
-            <span className="text-xs text-rose-500">듣고 뜻 맞히기</span>
+            <span className="text-[10px] text-rose-500">듣고 뜻 맞히기</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/speaking')}
+            className="flex flex-col items-center gap-1 rounded-2xl border-2 border-violet-200 bg-violet-50 px-2 py-4 text-center transition hover:bg-violet-100 active:scale-[0.98]"
+          >
+            <span className="text-2xl">🗣️</span>
+            <span className="font-display text-xs font-extrabold text-violet-700">
+              회화 연습
+            </span>
+            <span className="text-[10px] text-violet-500">셀프 스피킹</span>
           </button>
         </div>
 
@@ -135,29 +144,33 @@ export default function HomePage() {
                 <div className="pt-8">
                   {unit.relatedShort && <ShortEmbed short={unit.relatedShort} />}
 
-                  <div className="flex flex-col items-center gap-10">
+                  <div className="flex flex-wrap items-start justify-center gap-x-1 gap-y-6">
                     {unit.lessons.map((lesson, i) => {
                       const key = `${course.id}:${lesson.id}`
                       const completed = completedLessonIds.has(key)
                       const unlocked = isLessonUnlocked(course, unit.id, lesson.id)
                       const isCurrent = !currentFound && unlocked && !completed
                       if (isCurrent) currentFound = true
-                      const offset = SNAKE_OFFSETS[i % SNAKE_OFFSETS.length]
 
                       return (
-                        <LessonNode
-                          key={lesson.id}
-                          lesson={lesson}
-                          completed={completed}
-                          unlocked={unlocked}
-                          current={isCurrent}
-                          offset={offset}
-                          colors={colors}
-                          onClick={() => {
-                            if (!unlocked) return
-                            navigate(`/lesson/${unit.id}/${lesson.id}`)
-                          }}
-                        />
+                        <div key={lesson.id} className="flex items-center">
+                          {i > 0 && (
+                            <span className="mb-6 px-1 text-xl text-slate-300">
+                              →
+                            </span>
+                          )}
+                          <LessonNode
+                            lesson={lesson}
+                            completed={completed}
+                            unlocked={unlocked}
+                            current={isCurrent}
+                            colors={colors}
+                            onClick={() => {
+                              if (!unlocked) return
+                              navigate(`/lesson/${unit.id}/${lesson.id}`)
+                            }}
+                          />
+                        </div>
                       )
                     })}
                   </div>

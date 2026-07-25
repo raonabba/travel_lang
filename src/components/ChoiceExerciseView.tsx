@@ -34,6 +34,9 @@ export default function ChoiceExerciseView({
           {exercise.sourceNote && (
             <p className="mt-1 text-sm text-slate-400">{exercise.sourceNote}</p>
           )}
+          {exercise.sourcePronunciation && (
+            <p className="text-sm text-slate-400">[{exercise.sourcePronunciation}]</p>
+          )}
         </div>
         <SpeakerButton text={exercise.source} lang={lang} />
       </div>

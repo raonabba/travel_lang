@@ -54,6 +54,9 @@ export default function SpeakExerciseView({
         {exercise.note && (
           <p className="mt-1 text-sm text-slate-400">{exercise.note}</p>
         )}
+        {exercise.krPronunciation && (
+          <p className="text-sm text-slate-400">[{exercise.krPronunciation}]</p>
+        )}
         <div className="mt-3 flex justify-center">
           <SpeakerButton text={exercise.answer} lang={lang} />
         </div>

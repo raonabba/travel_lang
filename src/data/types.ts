@@ -1,10 +1,25 @@
-export type ExerciseType = 'choice' | 'wordbank' | 'speak'
+export type ExerciseType = 'learn' | 'choice' | 'wordbank' | 'speak'
+
+export interface TokenChunk {
+  text: string
+  /** Korean gloss for this chunk, shown while building a sentence */
+  gloss: string
+}
+
+export interface LearnExercise {
+  type: 'learn'
+  kr: string
+  target: string
+  note?: string
+  krPronunciation?: string
+}
 
 export interface ChoiceExercise {
   type: 'choice'
   prompt: string
   source: string
   sourceNote?: string
+  sourcePronunciation?: string
   options: string[]
   answer: string
 }
@@ -13,7 +28,7 @@ export interface WordBankExercise {
   type: 'wordbank'
   prompt: string
   source: string
-  tokens: string[]
+  tokens: TokenChunk[]
   answer: string[]
 }
 
@@ -23,19 +38,26 @@ export interface SpeakExercise {
   /** The target-language phrase the learner should say aloud */
   answer: string
   note?: string
+  krPronunciation?: string
 }
 
-export type Exercise = ChoiceExercise | WordBankExercise | SpeakExercise
+export type Exercise =
+  | LearnExercise
+  | ChoiceExercise
+  | WordBankExercise
+  | SpeakExercise
 
 export interface Card {
   /** Korean phrase (the learner's native language) */
   kr: string
   /** Target-language phrase */
   target: string
-  /** Optional pronunciation hint (e.g. hiragana reading, transliteration) */
+  /** Optional pronunciation hint in the target script (e.g. hiragana reading, transliteration) */
   note?: string
-  /** Target-language phrase split into chunks for the word-bank exercise */
-  tokens: string[]
+  /** Hangul approximation of the pronunciation, for reading aloud without knowing the target script's rules */
+  krPronunciation?: string
+  /** Target-language phrase split into chunks for the word-bank exercise, each with a Korean gloss */
+  tokens: TokenChunk[]
 }
 
 export interface Lesson {

@@ -180,6 +180,9 @@ export default function FlashcardPage() {
             {card.target}
           </p>
           {card.note && <p className="text-sm text-slate-400">{card.note}</p>}
+          {card.krPronunciation && (
+            <p className="text-sm text-slate-400">[{card.krPronunciation}]</p>
+          )}
           <div className="flex items-center gap-2">
             <SpeakerButton text={card.target} lang={course.speechLang} />
             <a

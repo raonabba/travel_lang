@@ -10,9 +10,11 @@ function refreshVoiceList() {
   const voices = window.speechSynthesis.getVoices()
   if (voices.length > 0) {
     voiceList = voices
-    // A newly available voice list can change which voice is best for a
-    // language we already picked, so let it be re-resolved.
-    chosenVoice.clear()
+    // Deliberately NOT clearing chosenVoice here: some browsers fire
+    // voiceschanged more than once as voices load in progressively, and
+    // re-resolving on every firing is exactly what caused the pinned
+    // voice to drift to a different (often worse-sounding) one mid-session.
+    // Once a language has a pinned voice, it keeps it for the whole session.
   }
 }
 
@@ -35,10 +37,15 @@ function pickVoice(lang: string): SpeechSynthesisVoice | null {
   const partial = voiceList.filter((v) => v.lang.toLowerCase().startsWith(prefix))
   const candidates = exact.length > 0 ? exact : partial
 
-  // Network/cloud voices (localService === false) tend to sound more
-  // natural than the OS's built-in offline voice; prefer them when available.
+  // Prefer the browser's own flagged default for this language first (this
+  // is what it auto-selects when no voice is specified, so it matches the
+  // "first call sounded right" experience), then a network/cloud voice,
+  // then whatever's left.
   const best =
-    candidates.find((v) => v.localService === false) ?? candidates[0] ?? null
+    candidates.find((v) => v.default) ??
+    candidates.find((v) => v.localService === false) ??
+    candidates[0] ??
+    null
 
   chosenVoice.set(lang, best)
   return best

@@ -1,10 +1,10 @@
-import type { WordBankExercise } from '../data/types'
+import type { TokenChunk, WordBankExercise } from '../data/types'
 import { joinSpokenTokens } from '../lib/speech'
 import SpeakerButton from './SpeakerButton'
 
 interface Props {
   exercise: WordBankExercise
-  tokenPool: { t: string; i: number }[]
+  tokenPool: { chunk: TokenChunk; i: number }[]
   pickedIndices: number[]
   status: 'active' | 'correct' | 'incorrect'
   lang: string
@@ -39,7 +39,7 @@ export default function WordBankExerciseView({
       </p>
 
       <div
-        className={`mb-6 flex min-h-16 flex-wrap items-start gap-2 rounded-2xl border-2 p-3 ${answerBoxState}`}
+        className={`mb-6 flex min-h-20 flex-wrap items-start gap-2 rounded-2xl border-2 p-3 ${answerBoxState}`}
       >
         {pickedIndices.length === 0 && (
           <span className="py-2 text-sm text-slate-400">
@@ -52,9 +52,14 @@ export default function WordBankExerciseView({
             type="button"
             disabled={status !== 'active'}
             onClick={() => onRemove(pos)}
-            className="rounded-xl border-2 border-slate-300 bg-white px-3 py-2 font-bold text-slate-700"
+            className="flex flex-col items-center rounded-xl border-2 border-slate-300 bg-white px-3 py-2"
           >
-            {exercise.tokens[i]}
+            <span className="font-bold text-slate-700">
+              {exercise.tokens[i].text}
+            </span>
+            <span className="text-[11px] text-slate-400">
+              {exercise.tokens[i].gloss}
+            </span>
           </button>
         ))}
       </div>
@@ -69,16 +74,17 @@ export default function WordBankExerciseView({
       )}
 
       <div className="flex flex-wrap gap-2">
-        {tokenPool.map(({ t, i }) =>
+        {tokenPool.map(({ chunk, i }) =>
           pickedSet.has(i) ? null : (
             <button
               key={i}
               type="button"
               disabled={status !== 'active'}
               onClick={() => onPick(i)}
-              className="rounded-xl border-2 border-slate-200 bg-white px-3 py-2 font-bold text-slate-700 transition hover:bg-slate-100"
+              className="flex flex-col items-center rounded-xl border-2 border-slate-200 bg-white px-3 py-2 transition hover:bg-slate-100"
             >
-              {t}
+              <span className="font-bold text-slate-700">{chunk.text}</span>
+              <span className="text-[11px] text-slate-400">{chunk.gloss}</span>
             </button>
           ),
         )}

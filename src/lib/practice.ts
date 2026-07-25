@@ -21,9 +21,11 @@ export function collectUnlockedLessons(
 }
 
 export function collectExercisePool(lessons: UnlockedLesson[]): Exercise[] {
-  // Speaking practice belongs to the guided lesson flow, not quick review drills.
+  // Review is quiz-only: skip the plain "learn" intro cards and speaking
+  // checks (those live in the guided lesson flow and the conversation
+  // practice mode instead).
   return lessons.flatMap(({ lesson }) =>
-    lesson.exercises.filter((e) => e.type !== 'speak'),
+    lesson.exercises.filter((e) => e.type === 'choice' || e.type === 'wordbank'),
   )
 }
 
