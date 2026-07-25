@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useProgress, MAX_HEARTS } from '../state/progress'
+import { useProgress } from '../state/progress'
 import { getCourse } from '../data/courses'
 import { courseColorClasses } from '../lib/colors'
 import { shuffle } from '../lib/shuffle'
@@ -10,12 +10,12 @@ import { shortsSearchUrl } from '../lib/youtube'
 import SpeakerButton from '../components/SpeakerButton'
 
 const DECK_SIZE = 10
-const BASE_REWARD = 1
-const PERFECT_BONUS = 1
+const BASE_REWARD_XP = 5
+const PERFECT_BONUS_XP = 5
 
 export default function FlashcardPage() {
   const navigate = useNavigate()
-  const { selectedCourseId, isLessonUnlocked, hearts, gainHearts } = useProgress()
+  const { selectedCourseId, isLessonUnlocked, gainXp } = useProgress()
   const course = selectedCourseId ? getCourse(selectedCourseId) : undefined
 
   const deck = useMemo(() => {
@@ -29,7 +29,7 @@ export default function FlashcardPage() {
   const [revealed, setRevealed] = useState(false)
   const [knownCount, setKnownCount] = useState(0)
   const [finished, setFinished] = useState(false)
-  const [gained, setGained] = useState(0)
+  const [xpGained, setXpGained] = useState(0)
 
   const card = deck[index]
 
@@ -76,11 +76,9 @@ export default function FlashcardPage() {
 
   function finishDeck(finalKnownCount: number) {
     const reward =
-      BASE_REWARD + (finalKnownCount === total ? PERFECT_BONUS : 0)
-    const before = hearts
-    const after = Math.min(MAX_HEARTS, before + reward)
-    setGained(after - before)
-    gainHearts(reward)
+      BASE_REWARD_XP + (finalKnownCount === total ? PERFECT_BONUS_XP : 0)
+    setXpGained(reward)
+    gainXp(reward)
     setFinished(true)
   }
 
@@ -101,7 +99,7 @@ export default function FlashcardPage() {
     setRevealed(false)
     setKnownCount(0)
     setFinished(false)
-    setGained(0)
+    setXpGained(0)
   }
 
   if (finished) {
@@ -117,9 +115,9 @@ export default function FlashcardPage() {
               {knownCount}/{total} 알아요
             </p>
           </div>
-          <div className="rounded-2xl bg-rose-50 px-6 py-3">
-            <p className="font-display text-2xl font-extrabold text-rose-500">
-              {gained > 0 ? `+${gained} ❤️` : '하트 가득 참'}
+          <div className="rounded-2xl bg-yellow-50 px-6 py-3">
+            <p className="font-display text-2xl font-extrabold text-yellow-500">
+              +{xpGained} XP
             </p>
           </div>
         </div>
@@ -155,7 +153,7 @@ export default function FlashcardPage() {
           ×
         </button>
         <p className="shrink-0 text-xs font-extrabold text-slate-400">
-          단어 암기 · 완료 시 하트 획득
+          단어 암기 · 완료 시 XP 획득
         </p>
         <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
           <div

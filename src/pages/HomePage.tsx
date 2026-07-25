@@ -1,21 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import TopBar from '../components/TopBar'
 import LessonNode from '../components/LessonNode'
-import ChannelList from '../components/ChannelList'
 import ShortEmbed from '../components/ShortEmbed'
-import { useProgress, MAX_HEARTS } from '../state/progress'
-import { getCourse } from '../data/courses'
+import { useProgress } from '../state/progress'
+import { getCourse, getLesson } from '../data/courses'
 import { courseColorClasses } from '../lib/colors'
 
 const SNAKE_OFFSETS = [0, 56, 84, 56, 0, -56, -84, -56]
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { selectedCourseId, completedLessonIds, isLessonUnlocked, hearts, msToNextHeart } =
+  const { selectedCourseId, completedLessonIds, isLessonUnlocked, lessonPosition } =
     useProgress()
-  const [showNoHearts, setShowNoHearts] = useState(false)
   const course = selectedCourseId ? getCourse(selectedCourseId) : undefined
+  const [expandedUnitId, setExpandedUnitId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!course) return
+    const currentUnit = course.units.find((unit) =>
+      unit.lessons.some(
+        (l) =>
+          isLessonUnlocked(course, unit.id, l.id) &&
+          !completedLessonIds.has(`${course.id}:${l.id}`),
+      ),
+    )
+    setExpandedUnitId(currentUnit?.id ?? course.units[0]?.id ?? null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [course?.id])
 
   if (!course) {
     return (
@@ -33,17 +45,40 @@ export default function HomePage() {
   }
 
   const colors = courseColorClasses[course.color]
-
-  let globalIndex = 0
   let currentFound = false
 
-  const minutesLeft = Math.max(1, Math.ceil(msToNextHeart / 60000))
+  const resumeLesson =
+    lessonPosition && lessonPosition.courseId === course.id
+      ? getLesson(course.id, lessonPosition.unitId, lessonPosition.lessonId).lesson
+      : null
 
   return (
     <div className="min-h-full bg-white pb-28">
       <TopBar />
 
       <div className="mx-auto max-w-md px-4 pt-6">
+        {resumeLesson && lessonPosition && (
+          <button
+            type="button"
+            onClick={() =>
+              navigate(`/lesson/${lessonPosition.unitId}/${lessonPosition.lessonId}`)
+            }
+            className="mb-6 flex w-full items-center gap-3 rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-4 py-3 text-left transition hover:bg-emerald-100 active:scale-[0.99]"
+          >
+            <span className="text-2xl">📖</span>
+            <span className="flex-1">
+              <span className="block font-display text-sm font-extrabold text-emerald-700">
+                이어서 학습하기
+              </span>
+              <span className="block text-xs text-emerald-600">
+                {resumeLesson.title} · {lessonPosition.index}/
+                {resumeLesson.exercises.length}
+              </span>
+            </span>
+            <span className="text-emerald-500">→</span>
+          </button>
+        )}
+
         <div className="mb-8 grid grid-cols-2 gap-3">
           <button
             type="button"
@@ -54,7 +89,7 @@ export default function HomePage() {
             <span className="font-display text-sm font-extrabold text-sky-700">
               복습하기
             </span>
-            <span className="text-xs text-sky-500">하트 소모 없음</span>
+            <span className="text-xs text-sky-500">추가 XP 획득</span>
           </button>
           <button
             type="button"
@@ -65,93 +100,73 @@ export default function HomePage() {
             <span className="font-display text-sm font-extrabold text-rose-700">
               단어 암기
             </span>
-            <span className="text-xs text-rose-500">완료 시 ❤️ 획득</span>
+            <span className="text-xs text-rose-500">듣고 뜻 맞히기</span>
           </button>
         </div>
 
-        {course.channels && course.channels.length > 0 && (
-          <ChannelList channels={course.channels} />
-        )}
+        {course.units.map((unit) => {
+          const isExpanded = expandedUnitId === unit.id
 
-        {course.units.map((unit) => (
-          <section key={unit.id} className="mb-12">
-            <div
-              className={`mb-10 rounded-2xl ${colors.bg} px-5 py-4 text-white shadow-sm`}
-            >
-              <div className="flex items-center gap-3">
+          return (
+            <section key={unit.id} className="mb-6">
+              <button
+                type="button"
+                onClick={() => setExpandedUnitId(isExpanded ? null : unit.id)}
+                className={`flex w-full items-center gap-3 rounded-2xl ${colors.bg} px-5 py-4 text-left text-white shadow-sm transition active:scale-[0.99]`}
+                aria-expanded={isExpanded}
+              >
                 <span className="text-3xl">{unit.icon}</span>
-                <div>
-                  <h2 className="font-display text-lg font-extrabold">
+                <span className="flex-1">
+                  <span className="block font-display text-lg font-extrabold">
                     {unit.title}
-                  </h2>
-                  <p className="text-sm text-white/80">{unit.description}</p>
+                  </span>
+                  <span className="block text-sm text-white/80">
+                    {unit.description}
+                  </span>
+                </span>
+                <span
+                  className={`text-xl transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                >
+                  ⌄
+                </span>
+              </button>
+
+              {isExpanded && (
+                <div className="pt-8">
+                  {unit.relatedShort && <ShortEmbed short={unit.relatedShort} />}
+
+                  <div className="flex flex-col items-center gap-10">
+                    {unit.lessons.map((lesson, i) => {
+                      const key = `${course.id}:${lesson.id}`
+                      const completed = completedLessonIds.has(key)
+                      const unlocked = isLessonUnlocked(course, unit.id, lesson.id)
+                      const isCurrent = !currentFound && unlocked && !completed
+                      if (isCurrent) currentFound = true
+                      const offset = SNAKE_OFFSETS[i % SNAKE_OFFSETS.length]
+
+                      return (
+                        <LessonNode
+                          key={lesson.id}
+                          lesson={lesson}
+                          completed={completed}
+                          unlocked={unlocked}
+                          current={isCurrent}
+                          offset={offset}
+                          colors={colors}
+                          onClick={() => {
+                            if (!unlocked) return
+                            navigate(`/lesson/${unit.id}/${lesson.id}`)
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            {unit.relatedShort && <ShortEmbed short={unit.relatedShort} />}
-
-            <div className="flex flex-col items-center gap-10">
-              {unit.lessons.map((lesson) => {
-                const key = `${course.id}:${lesson.id}`
-                const completed = completedLessonIds.has(key)
-                const unlocked = isLessonUnlocked(course, unit.id, lesson.id)
-                const isCurrent = !currentFound && unlocked && !completed
-                if (isCurrent) currentFound = true
-                const offset = SNAKE_OFFSETS[globalIndex % SNAKE_OFFSETS.length]
-                globalIndex += 1
-
-                return (
-                  <LessonNode
-                    key={lesson.id}
-                    lesson={lesson}
-                    completed={completed}
-                    unlocked={unlocked}
-                    current={isCurrent}
-                    offset={offset}
-                    colors={colors}
-                    onClick={() => {
-                      if (!unlocked) return
-                      if (hearts <= 0) {
-                        setShowNoHearts(true)
-                        return
-                      }
-                      navigate(`/lesson/${unit.id}/${lesson.id}`)
-                    }}
-                  />
-                )
-              })}
-            </div>
-          </section>
-        ))}
+              )}
+            </section>
+          )
+        })}
       </div>
-
-      {showNoHearts && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-rose-200 bg-rose-50 px-4 py-4">
-          <div className="mx-auto flex max-w-md flex-col gap-3">
-            <p className="text-sm font-bold text-rose-600">
-              하트가 모두 소진됐어요! 약 {minutesLeft}분 후 하트가 채워져요. (최대{' '}
-              {MAX_HEARTS}개) 단어 암기 게임을 완료하면 바로 하트를 얻을 수 있어요.
-            </p>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => navigate('/flashcards')}
-                className="flex-1 rounded-xl bg-rose-500 px-4 py-2 text-sm font-extrabold text-white"
-              >
-                단어 암기하고 하트 얻기
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowNoHearts(false)}
-                className="shrink-0 rounded-xl border-2 border-rose-200 px-4 py-2 text-sm font-extrabold text-rose-500"
-              >
-                닫기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

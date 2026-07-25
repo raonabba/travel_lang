@@ -34,4 +34,12 @@ export const courseColorClasses: Record<CourseColor, ColorClasses> = {
     border: 'border-orange-600',
     ring: 'ring-orange-300',
   },
+  violet: {
+    bg: 'bg-violet-500',
+    bgHover: 'hover:bg-violet-600',
+    bgLight: 'bg-violet-100',
+    text: 'text-violet-500',
+    border: 'border-violet-600',
+    ring: 'ring-violet-300',
+  },
 }

@@ -7,12 +7,14 @@ import { shuffle } from '../lib/shuffle'
 import { collectExercisePool, collectUnlockedLessons } from '../lib/practice'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
+import type { ChoiceExercise, WordBankExercise as WordBankExerciseType } from '../data/types'
 
 const REVIEW_LENGTH = 8
 const REVIEW_XP = 8
 
 type Status = 'active' | 'correct' | 'incorrect'
 type TokenChip = { t: string; i: number }
+type ReviewExercise = ChoiceExercise | WordBankExerciseType
 
 export default function ReviewPage() {
   const navigate = useNavigate()
@@ -21,7 +23,10 @@ export default function ReviewPage() {
 
   const exercises = useMemo(() => {
     if (!course) return []
-    const pool = collectExercisePool(collectUnlockedLessons(course, isLessonUnlocked))
+    // collectExercisePool never returns 'speak' exercises (review is quiz-only).
+    const pool = collectExercisePool(
+      collectUnlockedLessons(course, isLessonUnlocked),
+    ) as ReviewExercise[]
     return shuffle(pool).slice(0, REVIEW_LENGTH)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [course])
@@ -85,7 +90,6 @@ export default function ReviewPage() {
             +{REVIEW_XP} XP
           </p>
         </div>
-        <p className="text-sm text-slate-400">하트 소모 없이 복습했어요</p>
         <button
           type="button"
           onClick={() => navigate('/learn')}
@@ -143,7 +147,7 @@ export default function ReviewPage() {
         >
           ×
         </button>
-        <p className="shrink-0 text-xs font-extrabold text-slate-400">복습 모드 · 하트 소모 없음</p>
+        <p className="shrink-0 text-xs font-extrabold text-slate-400">복습 모드</p>
         <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-100">
           <div
             className="h-full rounded-full bg-sky-400 transition-all"

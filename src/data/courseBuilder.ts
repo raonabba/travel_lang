@@ -42,10 +42,27 @@ function buildWordBank(cards: Card[], index: number): Exercise {
   }
 }
 
+function buildSpeak(card: Card): Exercise {
+  return {
+    type: 'speak',
+    prompt: '이 표현을 소리 내어 말해보세요',
+    answer: card.target,
+    note: card.note,
+  }
+}
+
+/**
+ * Each card is taught word-first: recognize its meaning (choice) before
+ * having to actively reconstruct it (word bank), so a sentence is never
+ * the very first thing the learner sees. One speaking check closes out
+ * the lesson.
+ */
 export function buildLesson(id: string, title: string, cards: Card[]): Lesson {
-  const exercises = cards.map((_, i) =>
-    i % 2 === 0 ? buildChoice(cards, i) : buildWordBank(cards, i),
-  )
+  const exercises = cards.flatMap((_, i) => [
+    buildChoice(cards, i),
+    buildWordBank(cards, i),
+  ])
+  exercises.push(buildSpeak(cards[0]))
   return { id, title, exercises, cards }
 }
 

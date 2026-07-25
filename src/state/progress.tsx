@@ -8,9 +8,14 @@ import {
 } from 'react'
 import type { Course } from '../data/types'
 
-const STORAGE_KEY = 'travel_lang_progress_v1'
-export const MAX_HEARTS = 5
-const HEART_REGEN_MS = 30 * 60 * 1000 // 30 minutes per heart
+const STORAGE_KEY = 'travel_lang_progress_v2'
+
+interface LessonPosition {
+  courseId: string
+  unitId: string
+  lessonId: string
+  index: number
+}
 
 interface ProgressData {
   selectedCourseId: string | null
@@ -18,8 +23,7 @@ interface ProgressData {
   streak: number
   lastActiveDate: string | null
   completedLessons: string[]
-  hearts: number
-  heartsUpdatedAt: number
+  lessonPosition: LessonPosition | null
 }
 
 const DEFAULT_DATA: ProgressData = {
@@ -28,8 +32,7 @@ const DEFAULT_DATA: ProgressData = {
   streak: 0,
   lastActiveDate: null,
   completedLessons: [],
-  hearts: MAX_HEARTS,
-  heartsUpdatedAt: Date.now(),
+  lessonPosition: null,
 }
 
 function loadData(): ProgressData {
@@ -53,78 +56,43 @@ function yesterdayStr(): string {
   return d.toISOString().slice(0, 10)
 }
 
-export function currentHearts(hearts: number, heartsUpdatedAt: number, now = Date.now()): number {
-  if (hearts >= MAX_HEARTS) return MAX_HEARTS
-  const elapsed = now - heartsUpdatedAt
-  const regen = Math.floor(elapsed / HEART_REGEN_MS)
-  return Math.min(MAX_HEARTS, hearts + regen)
-}
-
-export function msUntilNextHeart(hearts: number, heartsUpdatedAt: number, now = Date.now()): number {
-  const have = currentHearts(hearts, heartsUpdatedAt, now)
-  if (have >= MAX_HEARTS) return 0
-  const elapsed = now - heartsUpdatedAt
-  const remainder = HEART_REGEN_MS - (elapsed % HEART_REGEN_MS)
-  return remainder
-}
-
 interface ProgressContextValue {
   selectedCourseId: string | null
   xp: number
   streak: number
-  hearts: number
-  msToNextHeart: number
   completedLessonIds: Set<string>
+  lessonPosition: LessonPosition | null
   selectCourse: (id: string) => void
-  loseHeart: () => void
-  refillHearts: () => void
-  gainHearts: (amount: number) => void
   gainXp: (amount: number) => void
   completeLesson: (courseId: string, lessonId: string, perfect: boolean) => void
   isLessonUnlocked: (course: Course, unitId: string, lessonId: string) => boolean
+  saveLessonPosition: (
+    courseId: string,
+    unitId: string,
+    lessonId: string,
+    index: number,
+  ) => void
+  clearLessonPosition: () => void
 }
 
 const ProgressContext = createContext<ProgressContextValue | null>(null)
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<ProgressData>(loadData)
-  const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
   }, [data])
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 15000)
-    return () => clearInterval(id)
-  }, [])
-
-  const hearts = currentHearts(data.hearts, data.heartsUpdatedAt, now)
-  const msToNextHeart = msUntilNextHeart(data.hearts, data.heartsUpdatedAt, now)
 
   const value = useMemo<ProgressContextValue>(
     () => ({
       selectedCourseId: data.selectedCourseId,
       xp: data.xp,
       streak: data.streak,
-      hearts,
-      msToNextHeart,
       completedLessonIds: new Set(data.completedLessons),
+      lessonPosition: data.lessonPosition,
       selectCourse: (id: string) =>
         setData((d) => ({ ...d, selectedCourseId: id })),
-      loseHeart: () =>
-        setData((d) => {
-          const have = currentHearts(d.hearts, d.heartsUpdatedAt)
-          const next = Math.max(0, have - 1)
-          return { ...d, hearts: next, heartsUpdatedAt: Date.now() }
-        }),
-      refillHearts: () =>
-        setData((d) => ({ ...d, hearts: MAX_HEARTS, heartsUpdatedAt: Date.now() })),
-      gainHearts: (amount: number) =>
-        setData((d) => {
-          const have = currentHearts(d.hearts, d.heartsUpdatedAt)
-          return { ...d, hearts: Math.min(MAX_HEARTS, have + amount) }
-        }),
       gainXp: (amount: number) => setData((d) => ({ ...d, xp: d.xp + amount })),
       completeLesson: (courseId: string, lessonId: string, perfect: boolean) =>
         setData((d) => {
@@ -148,6 +116,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
             streak,
             lastActiveDate: today,
             xp: d.xp + earnedXp,
+            lessonPosition: null,
           }
         }),
       isLessonUnlocked: (course: Course, unitId: string, lessonId: string) => {
@@ -163,8 +132,20 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
           `${course.id}:${prev.lessonId}`,
         )
       },
+      saveLessonPosition: (
+        courseId: string,
+        unitId: string,
+        lessonId: string,
+        index: number,
+      ) =>
+        setData((d) => ({
+          ...d,
+          lessonPosition: { courseId, unitId, lessonId, index },
+        })),
+      clearLessonPosition: () =>
+        setData((d) => ({ ...d, lessonPosition: null })),
     }),
-    [data, hearts, msToNextHeart],
+    [data],
   )
 
   return (

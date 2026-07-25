@@ -21,9 +21,27 @@ export function collectUnlockedLessons(
 }
 
 export function collectExercisePool(lessons: UnlockedLesson[]): Exercise[] {
-  return lessons.flatMap(({ lesson }) => lesson.exercises)
+  // Speaking practice belongs to the guided lesson flow, not quick review drills.
+  return lessons.flatMap(({ lesson }) =>
+    lesson.exercises.filter((e) => e.type !== 'speak'),
+  )
 }
 
 export function collectCardPool(lessons: UnlockedLesson[]): Card[] {
   return lessons.flatMap(({ lesson }) => lesson.cards)
+}
+
+export function getNextLesson(
+  course: Course,
+  unitId: string,
+  lessonId: string,
+): UnlockedLesson | null {
+  const flat: UnlockedLesson[] = course.units.flatMap((u) =>
+    u.lessons.map((lesson) => ({ unitId: u.id, lesson })),
+  )
+  const idx = flat.findIndex(
+    (f) => f.unitId === unitId && f.lesson.id === lessonId,
+  )
+  if (idx === -1 || idx + 1 >= flat.length) return null
+  return flat[idx + 1]
 }

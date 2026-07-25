@@ -4,9 +4,14 @@ import { useProgress } from '../state/progress'
 import { getLesson } from '../data/courses'
 import { courseColorClasses } from '../lib/colors'
 import { shuffle } from '../lib/shuffle'
+import { getNextLesson } from '../lib/practice'
+import { speak, joinSpokenTokens } from '../lib/speech'
+import { canRecognizeSpeech } from '../lib/speechRecognition'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
+import SpeakExerciseView from '../components/SpeakExerciseView'
 import LessonResult from '../components/LessonResult'
+import type { Exercise } from '../data/types'
 
 type Status = 'active' | 'correct' | 'incorrect'
 type TokenChip = { t: string; i: number }
@@ -14,36 +19,76 @@ type TokenChip = { t: string; i: number }
 export default function LessonPage() {
   const { unitId = '', lessonId = '' } = useParams()
   const navigate = useNavigate()
-  const { selectedCourseId, hearts, loseHeart, completeLesson } = useProgress()
+  const {
+    selectedCourseId,
+    completeLesson,
+    lessonPosition,
+    saveLessonPosition,
+    clearLessonPosition,
+  } = useProgress()
   const { course, unit, lesson } = selectedCourseId
     ? getLesson(selectedCourseId, unitId, lessonId)
     : { course: undefined, unit: undefined, lesson: undefined }
 
-  const [index, setIndex] = useState(0)
+  const exercises: Exercise[] = useMemo(() => {
+    if (!lesson) return []
+    return canRecognizeSpeech()
+      ? lesson.exercises
+      : lesson.exercises.filter((e) => e.type !== 'speak')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson])
+
+  const [index, setIndex] = useState(() => {
+    if (
+      lessonPosition &&
+      lessonPosition.courseId === selectedCourseId &&
+      lessonPosition.unitId === unitId &&
+      lessonPosition.lessonId === lessonId
+    ) {
+      return Math.min(
+        lessonPosition.index,
+        Math.max(exercises.length - 1, 0),
+      )
+    }
+    return 0
+  })
   const [status, setStatus] = useState<Status>('active')
   const [mistakes, setMistakes] = useState(0)
-  const [heartsLeft, setHeartsLeft] = useState(hearts)
-  const [finished, setFinished] = useState<'success' | 'fail' | null>(null)
+  const [finished, setFinished] = useState(false)
   const [choiceSelected, setChoiceSelected] = useState<string | null>(null)
   const [pickedIndices, setPickedIndices] = useState<number[]>([])
-  const [attempt, setAttempt] = useState(0)
-
-  useEffect(() => {
-    if (hearts <= 0) {
-      navigate('/learn', { replace: true })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const optionSets = useMemo(() => {
-    if (!lesson) return []
-    return lesson.exercises.map((ex): string[] | TokenChip[] =>
+    return exercises.map((ex): string[] | TokenChip[] | null =>
       ex.type === 'choice'
         ? shuffle(ex.options)
-        : shuffle(ex.tokens.map((t, i) => ({ t, i }))),
+        : ex.type === 'wordbank'
+          ? shuffle(ex.tokens.map((t, i) => ({ t, i })))
+          : null,
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lesson, attempt])
+  }, [exercises])
+
+  const total = exercises.length
+  const exercise = exercises[index]
+
+  useEffect(() => {
+    if (!course || !exercise || finished) return
+    if (exercise.type === 'choice') {
+      speak(exercise.source, course.speechLang)
+    } else if (exercise.type === 'wordbank') {
+      speak(joinSpokenTokens(exercise.answer, course.speechLang), course.speechLang)
+    } else if (exercise.type === 'speak') {
+      speak(exercise.answer, course.speechLang)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index])
+
+  useEffect(() => {
+    if (!course || !unit || !lesson || finished) return
+    saveLessonPosition(course.id, unit.id, lesson.id, index)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index])
 
   if (!course || !unit || !lesson) {
     return (
@@ -61,34 +106,22 @@ export default function LessonPage() {
   }
 
   const colors = courseColorClasses[course.color]
-  const total = lesson.exercises.length
-  const exercise = lesson.exercises[index]
 
-  if (finished === 'success') {
+  if (finished) {
+    const next = getNextLesson(course, unit.id, lesson.id)
     return (
       <LessonResult
-        outcome="success"
         xpEarned={mistakes === 0 ? 15 : 10}
         mistakes={mistakes}
-        onContinue={() => navigate('/learn')}
-      />
-    )
-  }
-
-  if (finished === 'fail') {
-    return (
-      <LessonResult
-        outcome="fail"
-        onHome={() => navigate('/learn')}
-        onRetry={() => {
-          setIndex(0)
-          setMistakes(0)
-          setHeartsLeft(hearts)
-          setStatus('active')
-          setChoiceSelected(null)
-          setPickedIndices([])
-          setFinished(null)
-          setAttempt((a) => a + 1)
+        hasNextLesson={next !== null}
+        onContinue={() => {
+          if (next) {
+            navigate(`/lesson/${next.unitId}/${next.lesson.id}`, {
+              replace: true,
+            })
+          } else {
+            navigate('/learn')
+          }
         }}
       />
     )
@@ -101,6 +134,7 @@ export default function LessonPage() {
   }
 
   function checkAnswer() {
+    if (exercise.type === 'speak') return
     let correct = false
     if (exercise.type === 'choice') {
       correct = choiceSelected === exercise.answer
@@ -108,25 +142,25 @@ export default function LessonPage() {
       const words = pickedIndices.map((i) => exercise.tokens[i])
       correct = JSON.stringify(words) === JSON.stringify(exercise.answer)
     }
-
     if (correct) {
       setStatus('correct')
     } else {
       setStatus('incorrect')
       setMistakes((m) => m + 1)
-      loseHeart()
-      setHeartsLeft((h) => Math.max(0, h - 1))
     }
   }
 
+  function handleSpeakResult(correct: boolean) {
+    if (status !== 'active') return
+    setStatus(correct ? 'correct' : 'incorrect')
+    if (!correct) setMistakes((m) => m + 1)
+  }
+
   function handleContinue() {
-    if (status === 'incorrect' && heartsLeft <= 0) {
-      setFinished('fail')
-      return
-    }
     if (index + 1 >= total) {
       completeLesson(course!.id, lesson!.id, mistakes === 0)
-      setFinished('success')
+      clearLessonPosition()
+      setFinished(true)
       return
     }
     setIndex((i) => i + 1)
@@ -136,7 +170,9 @@ export default function LessonPage() {
   const canCheck =
     exercise.type === 'choice'
       ? choiceSelected !== null
-      : pickedIndices.length === exercise.answer.length
+      : exercise.type === 'wordbank'
+        ? pickedIndices.length === exercise.answer.length
+        : false
 
   return (
     <div className="flex min-h-full flex-col bg-white">
@@ -155,9 +191,6 @@ export default function LessonPage() {
             style={{ width: `${(index / total) * 100}%` }}
           />
         </div>
-        <span className="flex items-center gap-1 font-display font-extrabold text-rose-500">
-          ❤️ {heartsLeft}
-        </span>
       </div>
 
       <div className="mx-auto w-full max-w-md flex-1 px-4 py-8">
@@ -171,7 +204,7 @@ export default function LessonPage() {
             lang={course.speechLang}
             onSelect={setChoiceSelected}
           />
-        ) : (
+        ) : exercise.type === 'wordbank' ? (
           <WordBankExerciseView
             exercise={exercise}
             tokenPool={optionSets[index] as TokenChip[]}
@@ -182,6 +215,14 @@ export default function LessonPage() {
             onRemove={(pos) =>
               setPickedIndices((prev) => prev.filter((_, idx) => idx !== pos))
             }
+          />
+        ) : (
+          <SpeakExerciseView
+            key={index}
+            exercise={exercise}
+            lang={course.speechLang}
+            status={status}
+            onResult={handleSpeakResult}
           />
         )}
       </div>
@@ -196,7 +237,7 @@ export default function LessonPage() {
         }`}
       >
         <div className="mx-auto flex max-w-md items-center justify-between gap-4">
-          {status === 'active' && (
+          {status === 'active' && exercise.type !== 'speak' && (
             <>
               <span />
               <button
@@ -233,7 +274,9 @@ export default function LessonPage() {
                 정답:{' '}
                 {exercise.type === 'choice'
                   ? exercise.answer
-                  : exercise.answer.join(' ')}
+                  : exercise.type === 'wordbank'
+                    ? exercise.answer.join(' ')
+                    : exercise.answer}
               </p>
               <button
                 type="button"

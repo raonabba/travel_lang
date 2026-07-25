@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useProgress } from '../state/progress'
 
 export default function TopBar() {
-  const { xp, streak, hearts } = useProgress()
+  const { xp, streak } = useProgress()
   const navigate = useNavigate()
 
   return (
@@ -21,9 +21,6 @@ export default function TopBar() {
           </span>
           <span className="flex items-center gap-1 text-yellow-500">
             ⭐ {xp}
-          </span>
-          <span className="flex items-center gap-1 text-rose-500">
-            ❤️ {hearts}
           </span>
         </div>
       </div>

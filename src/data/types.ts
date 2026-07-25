@@ -1,4 +1,4 @@
-export type ExerciseType = 'choice' | 'wordbank'
+export type ExerciseType = 'choice' | 'wordbank' | 'speak'
 
 export interface ChoiceExercise {
   type: 'choice'
@@ -17,14 +17,22 @@ export interface WordBankExercise {
   answer: string[]
 }
 
-export type Exercise = ChoiceExercise | WordBankExercise
+export interface SpeakExercise {
+  type: 'speak'
+  prompt: string
+  /** The target-language phrase the learner should say aloud */
+  answer: string
+  note?: string
+}
+
+export type Exercise = ChoiceExercise | WordBankExercise | SpeakExercise
 
 export interface Card {
   /** Korean phrase (the learner's native language) */
   kr: string
   /** Target-language phrase */
   target: string
-  /** Optional pronunciation hint (e.g. romaji) */
+  /** Optional pronunciation hint (e.g. hiragana reading, transliteration) */
   note?: string
   /** Target-language phrase split into chunks for the word-bank exercise */
   tokens: string[]
@@ -53,12 +61,6 @@ export interface Unit {
   relatedShort?: RelatedShort
 }
 
-export interface LearningChannel {
-  name: string
-  description: string
-  url: string
-}
-
 export interface Course {
   id: string
   title: string
@@ -69,8 +71,6 @@ export interface Course {
   speechLang: string
   comingSoon?: boolean
   units: Unit[]
-  /** Recommended external YouTube channels for further study */
-  channels?: LearningChannel[]
 }
 
-export type CourseColor = 'green' | 'blue' | 'orange'
+export type CourseColor = 'green' | 'blue' | 'orange' | 'violet'
