@@ -41,6 +41,7 @@ export default function SpeakingPracticePage() {
   const [correctCount, setCorrectCount] = useState(0)
   const [finished, setFinished] = useState(false)
   const [xpGained, setXpGained] = useState(0)
+  const [retryKey, setRetryKey] = useState(0)
 
   if (!course) {
     return (
@@ -112,6 +113,12 @@ export default function SpeakingPracticePage() {
     }
     setIndex((i) => i + 1)
     setStatus('active')
+    setRetryKey(0)
+  }
+
+  function handleRetry() {
+    setStatus('active')
+    setRetryKey((k) => k + 1)
   }
 
   if (finished) {
@@ -168,7 +175,7 @@ export default function SpeakingPracticePage() {
 
       <div className="mx-auto w-full max-w-md flex-1 px-4 py-8">
         <SpeakExerciseView
-          key={index}
+          key={`${index}-${retryKey}`}
           exercise={exercise}
           lang={course.speechLang}
           status={status}
@@ -194,12 +201,12 @@ export default function SpeakingPracticePage() {
             </p>
             <button
               type="button"
-              onClick={handleContinue}
+              onClick={status === 'correct' ? handleContinue : handleRetry}
               className={`rounded-2xl px-8 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none ${
                 status === 'correct' ? 'bg-emerald-500' : 'bg-rose-500'
               }`}
             >
-              계속하기
+              {status === 'correct' ? '계속하기' : '다시 시도'}
             </button>
           </div>
         </div>

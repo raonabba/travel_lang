@@ -18,6 +18,15 @@ function buildLearn(card: Card): Exercise {
   }
 }
 
+function buildRepeat(card: Card): Exercise {
+  return {
+    type: 'repeat',
+    target: card.target,
+    note: card.note,
+    krPronunciation: card.krPronunciation,
+  }
+}
+
 function buildChoice(cards: Card[], index: number): Exercise {
   const card = cards[index]
   const others = cards.filter((_, i) => i !== index)
@@ -70,14 +79,15 @@ function buildSpeak(card: Card): Exercise {
 
 /**
  * Each card is taught word-first: a plain "learn" step introduces the
- * meaning before any quiz, then recognition (choice), then active
- * reconstruction (word bank), then a speaking check — so a sentence is
- * never the very first thing the learner sees, and every card gets its
- * own speaking practice.
+ * meaning before any quiz, then a listen-and-repeat pronunciation check,
+ * then recognition (choice), then active reconstruction (word bank), then
+ * a recall-and-speak check — so a sentence is never the very first thing
+ * the learner sees, and every card gets full listening + speaking practice.
  */
 export function buildLesson(id: string, title: string, cards: Card[]): Lesson {
   const exercises = cards.flatMap((_, i) => [
     buildLearn(cards[i]),
+    buildRepeat(cards[i]),
     buildChoice(cards, i),
     buildWordBank(cards, i),
     buildSpeak(cards[i]),

@@ -8,6 +8,7 @@ import { getNextLesson } from '../lib/practice'
 import { speak, joinSpokenTokens } from '../lib/speech'
 import { canRecognizeSpeech } from '../lib/speechRecognition'
 import LearnExerciseView from '../components/LearnExerciseView'
+import RepeatExerciseView from '../components/RepeatExerciseView'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
 import SpeakExerciseView from '../components/SpeakExerciseView'
@@ -35,7 +36,7 @@ export default function LessonPage() {
     if (!lesson) return []
     return canRecognizeSpeech()
       ? lesson.exercises
-      : lesson.exercises.filter((e) => e.type !== 'speak')
+      : lesson.exercises.filter((e) => e.type !== 'speak' && e.type !== 'repeat')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson])
 
@@ -58,6 +59,7 @@ export default function LessonPage() {
   const [finished, setFinished] = useState(false)
   const [choiceSelected, setChoiceSelected] = useState<string | null>(null)
   const [pickedIndices, setPickedIndices] = useState<number[]>([])
+  const [retryKey, setRetryKey] = useState(0)
 
   const optionSets = useMemo(() => {
     return exercises.map((ex): string[] | TokenPoolEntry[] | null =>
@@ -75,7 +77,7 @@ export default function LessonPage() {
 
   useEffect(() => {
     if (!course || !exercise || finished) return
-    if (exercise.type === 'learn') {
+    if (exercise.type === 'learn' || exercise.type === 'repeat') {
       speak(exercise.target, course.speechLang)
     } else if (exercise.type === 'choice') {
       speak(exercise.source, course.speechLang)
@@ -134,6 +136,7 @@ export default function LessonPage() {
     setStatus('active')
     setChoiceSelected(null)
     setPickedIndices([])
+    setRetryKey(0)
   }
 
   function checkAnswer() {
@@ -153,10 +156,17 @@ export default function LessonPage() {
     }
   }
 
-  function handleSpeakResult(correct: boolean) {
+  function handleMicResult(correct: boolean) {
     if (status !== 'active') return
     setStatus(correct ? 'correct' : 'incorrect')
     if (!correct) setMistakes((m) => m + 1)
+  }
+
+  function handleRetry() {
+    setStatus('active')
+    setChoiceSelected(null)
+    setPickedIndices([])
+    setRetryKey((k) => k + 1)
   }
 
   function handleContinue() {
@@ -203,6 +213,15 @@ export default function LessonPage() {
             lang={course.speechLang}
             colors={colors}
           />
+        ) : exercise.type === 'repeat' ? (
+          <RepeatExerciseView
+            key={`${index}-${retryKey}`}
+            exercise={exercise}
+            lang={course.speechLang}
+            status={status}
+            seed={index}
+            onResult={handleMicResult}
+          />
         ) : exercise.type === 'choice' ? (
           <ChoiceExerciseView
             exercise={exercise}
@@ -220,6 +239,7 @@ export default function LessonPage() {
             pickedIndices={pickedIndices}
             status={status}
             lang={course.speechLang}
+            seed={index}
             onPick={(i) => setPickedIndices((prev) => [...prev, i])}
             onRemove={(pos) =>
               setPickedIndices((prev) => prev.filter((_, idx) => idx !== pos))
@@ -227,11 +247,11 @@ export default function LessonPage() {
           />
         ) : (
           <SpeakExerciseView
-            key={index}
+            key={`${index}-${retryKey}`}
             exercise={exercise}
             lang={course.speechLang}
             status={status}
-            onResult={handleSpeakResult}
+            onResult={handleMicResult}
           />
         )}
       </div>
@@ -300,14 +320,16 @@ export default function LessonPage() {
                     ? exercise.answer.join(' ')
                     : exercise.type === 'speak'
                       ? exercise.answer
-                      : ''}
+                      : exercise.type === 'repeat'
+                        ? exercise.target
+                        : ''}
               </p>
               <button
                 type="button"
-                onClick={handleContinue}
+                onClick={handleRetry}
                 className="rounded-2xl bg-rose-500 px-8 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
               >
-                계속하기
+                다시 시도
               </button>
             </>
           )}

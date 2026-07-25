@@ -1,5 +1,7 @@
 import type { TokenChunk, WordBankExercise } from '../data/types'
 import { joinSpokenTokens } from '../lib/speech'
+import { pickCharacter } from '../data/characters'
+import CharacterBubble from './CharacterBubble'
 import SpeakerButton from './SpeakerButton'
 
 interface Props {
@@ -8,6 +10,7 @@ interface Props {
   pickedIndices: number[]
   status: 'active' | 'correct' | 'incorrect'
   lang: string
+  seed: number
   onPick: (i: number) => void
   onRemove: (position: number) => void
 }
@@ -18,9 +21,11 @@ export default function WordBankExerciseView({
   pickedIndices,
   status,
   lang,
+  seed,
   onPick,
   onRemove,
 }: Props) {
+  const character = pickCharacter(seed)
   const pickedSet = new Set(pickedIndices)
   const answerBoxState =
     status === 'correct'
@@ -34,9 +39,11 @@ export default function WordBankExerciseView({
       <h1 className="mb-6 font-display text-xl font-extrabold text-slate-800 md:text-2xl">
         {exercise.prompt}
       </h1>
-      <p className="mb-4 font-display text-xl font-extrabold text-slate-800">
-        {exercise.source}
-      </p>
+      <CharacterBubble character={character}>
+        <p className="font-display text-xl font-extrabold text-slate-800">
+          {exercise.source}
+        </p>
+      </CharacterBubble>
 
       <div
         className={`mb-6 flex min-h-20 flex-wrap items-start gap-2 rounded-2xl border-2 p-3 ${answerBoxState}`}

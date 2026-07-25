@@ -1,4 +1,4 @@
-export type ExerciseType = 'learn' | 'choice' | 'wordbank' | 'speak'
+export type ExerciseType = 'learn' | 'repeat' | 'choice' | 'wordbank' | 'speak'
 
 export interface TokenChunk {
   text: string
@@ -9,6 +9,13 @@ export interface TokenChunk {
 export interface LearnExercise {
   type: 'learn'
   kr: string
+  target: string
+  note?: string
+  krPronunciation?: string
+}
+
+export interface RepeatExercise {
+  type: 'repeat'
   target: string
   note?: string
   krPronunciation?: string
@@ -45,6 +52,7 @@ export interface SpeakExercise {
 
 export type Exercise =
   | LearnExercise
+  | RepeatExercise
   | ChoiceExercise
   | WordBankExercise
   | SpeakExercise

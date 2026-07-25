@@ -125,6 +125,12 @@ export default function ReviewPage() {
     setStatus(correct ? 'correct' : 'incorrect')
   }
 
+  function handleRetry() {
+    setStatus('active')
+    setChoiceSelected(null)
+    setPickedIndices([])
+  }
+
   function handleContinue() {
     if (index + 1 >= total) {
       gainXp(REVIEW_XP)
@@ -178,6 +184,7 @@ export default function ReviewPage() {
             pickedIndices={pickedIndices}
             status={status}
             lang={course.speechLang}
+            seed={index}
             onPick={(i) => setPickedIndices((prev) => [...prev, i])}
             onRemove={(pos) =>
               setPickedIndices((prev) => prev.filter((_, idx) => idx !== pos))
@@ -237,10 +244,10 @@ export default function ReviewPage() {
               </p>
               <button
                 type="button"
-                onClick={handleContinue}
+                onClick={handleRetry}
                 className="rounded-2xl bg-rose-500 px-8 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
               >
-                계속하기
+                다시 시도
               </button>
             </>
           )}
