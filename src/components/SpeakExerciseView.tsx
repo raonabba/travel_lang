@@ -22,7 +22,9 @@ export default function SpeakExerciseView({
 }: Props) {
   const [listening, setListening] = useState(false)
   const [heard, setHeard] = useState<string | null>(null)
+  const [hintShown, setHintShown] = useState(false)
   const supported = canRecognizeSpeech()
+  const revealed = hintShown || status !== 'active'
 
   function startListening() {
     const recognizer = createRecognizer(lang)
@@ -45,22 +47,40 @@ export default function SpeakExerciseView({
   return (
     <div>
       <h1 className="mb-6 font-display text-xl font-extrabold text-slate-800 md:text-2xl">
-        {exercise.prompt}
+        이 뜻을 소리 내어 말해보세요
       </h1>
-      <div className="mb-8 rounded-2xl border-2 border-slate-200 bg-slate-50 px-5 py-6 text-center">
+      <div className="mb-4 rounded-2xl border-2 border-slate-200 bg-slate-50 px-5 py-6 text-center">
         <p className="font-display text-2xl font-extrabold text-slate-800">
-          {exercise.answer}
+          {exercise.kr}
         </p>
-        {exercise.note && (
-          <p className="mt-1 text-sm text-slate-400">{exercise.note}</p>
-        )}
-        {exercise.krPronunciation && (
-          <p className="text-sm text-slate-400">[{exercise.krPronunciation}]</p>
-        )}
-        <div className="mt-3 flex justify-center">
-          <SpeakerButton text={exercise.answer} lang={lang} />
-        </div>
       </div>
+
+      {revealed ? (
+        <div className="mb-6 rounded-2xl border-2 border-dashed border-slate-300 bg-white px-5 py-4 text-center">
+          <p className="font-display text-xl font-extrabold text-slate-700">
+            {exercise.answer}
+          </p>
+          {exercise.note && (
+            <p className="mt-1 text-sm text-slate-400">{exercise.note}</p>
+          )}
+          {exercise.krPronunciation && (
+            <p className="text-sm text-slate-400">[{exercise.krPronunciation}]</p>
+          )}
+          <div className="mt-2 flex justify-center">
+            <SpeakerButton text={exercise.answer} lang={lang} />
+          </div>
+        </div>
+      ) : (
+        status === 'active' && (
+          <button
+            type="button"
+            onClick={() => setHintShown(true)}
+            className="mb-6 w-full text-center text-sm font-bold text-slate-400 underline underline-offset-2"
+          >
+            모르겠어요, 힌트 보기
+          </button>
+        )
+      )}
 
       {!supported ? (
         <p className="text-center text-sm text-slate-400">
@@ -79,7 +99,7 @@ export default function SpeakExerciseView({
             🎤
           </button>
           <p className="text-sm font-bold text-slate-500">
-            {listening ? '듣고 있어요...' : '마이크를 눌러 따라 말해보세요'}
+            {listening ? '듣고 있어요...' : '마이크를 눌러 말해보세요'}
           </p>
           {heard && (
             <p className="text-sm text-slate-400">인식된 문장: “{heard}”</p>

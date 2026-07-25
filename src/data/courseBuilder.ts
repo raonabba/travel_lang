@@ -60,7 +60,8 @@ function buildWordBank(cards: Card[], index: number): Exercise {
 function buildSpeak(card: Card): Exercise {
   return {
     type: 'speak',
-    prompt: '이 표현을 소리 내어 말해보세요',
+    prompt: '이 문장을 말해보세요',
+    kr: card.kr,
     answer: card.target,
     note: card.note,
     krPronunciation: card.krPronunciation,

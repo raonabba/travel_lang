@@ -35,6 +35,8 @@ export interface WordBankExercise {
 export interface SpeakExercise {
   type: 'speak'
   prompt: string
+  /** Korean meaning shown as the prompt; the learner must recall and say the target phrase, not just read it back */
+  kr: string
   /** The target-language phrase the learner should say aloud */
   answer: string
   note?: string
