@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProgress } from '../state/progress'
 import { getCourse } from '../data/courses'
@@ -9,7 +9,7 @@ import { speak, canSpeak } from '../lib/speech'
 import { shortsSearchUrl } from '../lib/youtube'
 import SpeakerButton from '../components/SpeakerButton'
 
-const DECK_SIZE = 10
+const DECK_SIZE = 15
 const BASE_REWARD_XP = 5
 const PERFECT_BONUS_XP = 5
 
@@ -18,12 +18,15 @@ export default function FlashcardPage() {
   const { selectedCourseId, isLessonUnlocked, gainXp } = useProgress()
   const course = selectedCourseId ? getCourse(selectedCourseId) : undefined
 
-  const deck = useMemo(() => {
+  // Lazy useState (not useMemo keyed on `course`) so every visit to this
+  // page reshuffles — course data is a stable module-level object, so a
+  // useMemo dependency on it never re-runs across visits within a session,
+  // which was showing the exact same 10 cards every single time.
+  const [deck] = useState(() => {
     if (!course) return []
     const pool = collectCardPool(collectUnlockedLessons(course, isLessonUnlocked))
     return shuffle(pool).slice(0, DECK_SIZE)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [course])
+  })
 
   const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)

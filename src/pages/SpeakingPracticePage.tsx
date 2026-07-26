@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProgress } from '../state/progress'
 import { getCourse } from '../data/courses'
@@ -18,7 +18,7 @@ import SpeakerButton from '../components/SpeakerButton'
 import SpeakExerciseView from '../components/SpeakExerciseView'
 import type { DialogueScenario, SpeakExercise } from '../data/types'
 
-const DECK_SIZE = 10
+const DECK_SIZE = 12
 const BASE_XP = 5
 const PERFECT_BONUS_XP = 5
 const SCENARIO_XP = 10
@@ -371,7 +371,11 @@ function RandomDeckPractice() {
   const { selectedCourseId, isLessonUnlocked, gainXp } = useProgress()
   const course = selectedCourseId ? getCourse(selectedCourseId) : undefined
 
-  const deck: SpeakExercise[] = useMemo(() => {
+  // Lazy useState (not useMemo keyed on `course`) so every visit reshuffles
+  // — course data is a stable module-level object, so a useMemo dependency
+  // on it never re-runs across visits within a session, which was showing
+  // the same fixed subset of sentences every single time.
+  const [deck] = useState<SpeakExercise[]>(() => {
     if (!course) return []
     const cards = collectCardPool(collectUnlockedLessons(course, isLessonUnlocked))
     return shuffle(cards)
@@ -385,8 +389,7 @@ function RandomDeckPractice() {
         krPronunciation: card.krPronunciation,
         cardTarget: card.target,
       }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [course])
+  })
 
   const [index, setIndex] = useState(0)
   const [status, setStatus] = useState<Status>('active')

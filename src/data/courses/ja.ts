@@ -94,6 +94,26 @@ const dialogues: DialogueScenario[] = [
       { speaker: 'user', kr: '네, 부탁드려요.', target: 'はい、お願いします。', krPronunciation: '하이, 오네가이시마스' },
     ],
   },
+  {
+    id: 'ja-d-hotel-checkin',
+    title: '호텔 체크인',
+    turns: [
+      { speaker: 'staff', kr: '어서 오세요. 예약하신 성함이 어떻게 되세요?', target: 'いらっしゃいませ。ご予約のお名前は？', krPronunciation: '이랏샤이마세. 고요야쿠노 오나마에와?' },
+      { speaker: 'user', kr: '예약했습니다.', target: '予約しました。', krPronunciation: '요야쿠 시마시타' },
+      { speaker: 'staff', kr: '알겠습니다. 여기 방 열쇠입니다.', target: 'かしこまりました。こちらが鍵です。', krPronunciation: '카시코마리마시타. 코치라가 카기데스' },
+      { speaker: 'user', kr: '감사합니다.', target: 'ありがとうございます。', krPronunciation: '아리가토- 고자이마스' },
+    ],
+  },
+  {
+    id: 'ja-d-directions',
+    title: '길 묻기',
+    turns: [
+      { speaker: 'user', kr: '실례합니다, 이 길이 맞나요?', target: 'すみません、この道で合っていますか？', krPronunciation: '스미마센, 코노 미치데 앗테이마스카?' },
+      { speaker: 'staff', kr: '네, 똑바로 가세요.', target: 'はい、まっすぐ行ってください。', krPronunciation: '하이, 맛스구 잇테 쿠다사이' },
+      { speaker: 'user', kr: '감사합니다.', target: 'ありがとうございます。', krPronunciation: '아리가토- 고자이마스' },
+      { speaker: 'staff', kr: '조심히 가세요.', target: '気をつけて。', krPronunciation: '키오 츠케테' },
+    ],
+  },
 ]
 
 export const jaCourse: Course = {

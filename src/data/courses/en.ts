@@ -96,6 +96,26 @@ const dialogues: DialogueScenario[] = [
       { speaker: 'user', kr: '물만 주세요, 감사합니다.', target: 'Just water, thanks.', krPronunciation: '저스트 워터, 땡스' },
     ],
   },
+  {
+    id: 'en-d-directions',
+    title: '길 묻기',
+    turns: [
+      { speaker: 'user', kr: '이 길이 맞나요?', target: 'Is this the right way?', krPronunciation: '이즈 디스 더 라잇 웨이?' },
+      { speaker: 'staff', kr: '네, 똑바로 가세요.', target: 'Yes, go straight ahead.', krPronunciation: '예스, 고우 스트레이트 어헤드' },
+      { speaker: 'user', kr: '감사합니다!', target: 'Thank you!', krPronunciation: '땡큐!' },
+      { speaker: 'staff', kr: '천만에요! 좋은 하루 되세요.', target: "You're welcome! Have a nice day.", krPronunciation: '유어 웰컴! 해브 어 나이스 데이' },
+    ],
+  },
+  {
+    id: 'en-d-taxi',
+    title: '택시 부르기',
+    turns: [
+      { speaker: 'user', kr: '택시를 불러주세요.', target: 'Please call a taxi.', krPronunciation: '플리즈 콜 어 택시' },
+      { speaker: 'staff', kr: '네, 어디로 가시나요?', target: 'Sure, where are you going?', krPronunciation: '슈어, 웨어 아 유 고잉?' },
+      { speaker: 'user', kr: '호텔로요.', target: 'To the hotel, please.', krPronunciation: '투 더 호텔, 플리즈' },
+      { speaker: 'staff', kr: '알겠습니다.', target: 'No problem.', krPronunciation: '노 프라블럼' },
+    ],
+  },
 ]
 
 export const enCourse: Course = {

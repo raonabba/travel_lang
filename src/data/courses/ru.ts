@@ -112,6 +112,26 @@ const dialogues: DialogueScenario[] = [
       { speaker: 'user', kr: '보르시와 차 주세요.', target: 'Борщ и чай, пожалуйста.', krPronunciation: '보르쉬 이 차이, 빠잘루스따' },
     ],
   },
+  {
+    id: 'ru-d-hotel-checkin',
+    title: '호텔 체크인',
+    turns: [
+      { speaker: 'staff', kr: '안녕하세요! 예약하셨나요?', target: 'Здравствуйте! У вас есть бронь?', krPronunciation: '즈드라스트부이쩨! 우 바스 예스찌 브론?' },
+      { speaker: 'user', kr: '네, 예약했어요.', target: 'Да, у меня есть бронь.', krPronunciation: '다, 우 미냐 예스찌 브론' },
+      { speaker: 'staff', kr: '여기 열쇠입니다.', target: 'Вот ваш ключ.', krPronunciation: '봇 바쉬 클류치' },
+      { speaker: 'user', kr: '정말 감사합니다.', target: 'Спасибо большое.', krPronunciation: '스빠시바 발쇼예' },
+    ],
+  },
+  {
+    id: 'ru-d-market',
+    title: '시장에서 흥정하기',
+    turns: [
+      { speaker: 'user', kr: '이거 얼마예요?', target: 'Сколько это стоит?', krPronunciation: '스꼴까 에따 스또잇?' },
+      { speaker: 'staff', kr: '5천 텡게입니다.', target: 'Пять тысяч тенге.', krPronunciation: '뺘찌 띠샤치 뗀게' },
+      { speaker: 'user', kr: '너무 비싸요. 조금 깎아주세요.', target: 'Это слишком дорого. Сделайте скидку, пожалуйста.', krPronunciation: '에따 슬리쉬깜 도라가. 즈졜라이쩨 스끼드꾸, 빠잘루스따' },
+      { speaker: 'staff', kr: '알겠습니다, 할인해드릴게요.', target: 'Хорошо, для вас скидка.', krPronunciation: '하라쇼, 들랴 바스 스끼드까' },
+    ],
+  },
 ]
 
 export const ruCourse: Course = {

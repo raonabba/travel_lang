@@ -16,7 +16,7 @@ import type {
   WordBankExercise as WordBankExerciseType,
 } from '../data/types'
 
-const REVIEW_LENGTH = 8
+const REVIEW_LENGTH = 12
 const REVIEW_XP = 8
 
 type Status = 'active' | 'correct' | 'incorrect'
@@ -29,7 +29,11 @@ export default function ReviewPage() {
     useProgress()
   const course = selectedCourseId ? getCourse(selectedCourseId) : undefined
 
-  const exercises = useMemo(() => {
+  // Lazy useState (not useMemo keyed on `course`) so every visit reshuffles
+  // — course data is a stable module-level object, so a useMemo dependency
+  // on it never re-runs across visits within a session, which was showing
+  // the same fixed subset of words every single time.
+  const [exercises] = useState(() => {
     if (!course) return []
     // collectExercisePool never returns 'speak'/'repeat' exercises (review is quiz-only).
     const pool = collectExercisePool(
@@ -37,8 +41,7 @@ export default function ReviewPage() {
     ) as ReviewExercise[]
     // Words missed more recently are weighted to come up more often.
     return weightedSample(pool, REVIEW_LENGTH, (target) => getCardWeight(course.id, target))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [course])
+  })
 
   const optionSets = useMemo(() => {
     return exercises.map((ex): string[] | TokenPoolEntry[] =>
