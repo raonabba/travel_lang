@@ -1,3 +1,5 @@
+import { pickCharacter } from '../data/characters'
+
 interface Props {
   xpEarned: number
   mistakes: number
@@ -11,11 +13,16 @@ export default function LessonResult({
   hasNextLesson,
   onContinue,
 }: Props) {
+  const character = pickCharacter()
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-6 bg-white px-6 text-center">
-      <span className="text-7xl">🎉</span>
+      <img
+        src={character.poses.wave}
+        alt={character.name}
+        className="h-28 w-28 rounded-full object-cover"
+      />
       <h1 className="font-display text-3xl font-extrabold text-slate-800">
-        레슨 완료!
+        안녕~ 레슨 완료!
       </h1>
       <div className="flex gap-4">
         <div className="rounded-2xl bg-yellow-50 px-6 py-3">

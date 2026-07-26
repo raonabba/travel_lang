@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { SpeakExercise } from '../data/types'
 import {
   canRecognizeSpeech,
   createRecognizer,
+  matchedPrefixRatio,
   normalizeForCompare,
 } from '../lib/speechRecognition'
+import { playCorrectSound } from '../lib/sound'
+import GaugeText from './GaugeText'
 import SpeakerButton from './SpeakerButton'
 
 interface Props {
@@ -21,23 +24,33 @@ export default function SpeakExerciseView({
   onResult,
 }: Props) {
   const [listening, setListening] = useState(false)
+  const [progress, setProgress] = useState(0)
   const [heard, setHeard] = useState<string | null>(null)
   const [hintShown, setHintShown] = useState(false)
   const supported = canRecognizeSpeech()
   const revealed = hintShown || status !== 'active'
+
+  useEffect(() => {
+    if (status === 'correct') playCorrectSound()
+  }, [status])
 
   function startListening() {
     const recognizer = createRecognizer(lang)
     if (!recognizer) return
     setListening(true)
     setHeard(null)
+    setProgress(0)
     recognizer.onresult = (event) => {
-      const transcript = event.results[0][0].transcript
+      const last = event.results[event.results.length - 1]
+      const transcript = last[0].transcript
       setHeard(transcript)
-      const a = normalizeForCompare(transcript)
-      const b = normalizeForCompare(exercise.answer)
-      const correct = a.length > 0 && (a.includes(b) || b.includes(a))
-      onResult(correct)
+      setProgress(matchedPrefixRatio(exercise.answer, transcript))
+      if (last.isFinal) {
+        const a = normalizeForCompare(transcript)
+        const b = normalizeForCompare(exercise.answer)
+        const correct = a.length > 0 && (a.includes(b) || b.includes(a))
+        onResult(correct)
+      }
     }
     recognizer.onerror = () => setListening(false)
     recognizer.onend = () => setListening(false)
@@ -57,9 +70,12 @@ export default function SpeakExerciseView({
 
       {revealed ? (
         <div className="mb-6 rounded-2xl border-2 border-dashed border-slate-300 bg-white px-5 py-4 text-center">
-          <p className="font-display text-xl font-extrabold text-slate-700">
-            {exercise.answer}
-          </p>
+          <GaugeText
+            text={exercise.answer}
+            progress={progress}
+            active={listening}
+            className="justify-center text-xl"
+          />
           {exercise.note && (
             <p className="mt-1 text-sm text-slate-400">{exercise.note}</p>
           )}
@@ -83,9 +99,19 @@ export default function SpeakExerciseView({
       )}
 
       {!supported ? (
-        <p className="text-center text-sm text-slate-400">
-          이 브라우저는 음성 인식을 지원하지 않아요. Chrome에서 시도해보세요.
-        </p>
+        <div className="flex flex-col items-center gap-3">
+          <p className="text-center text-sm text-slate-400">
+            이 브라우저는 음성 인식을 지원하지 않아요.
+          </p>
+          <button
+            type="button"
+            disabled={status !== 'active'}
+            onClick={() => onResult(true)}
+            className="rounded-2xl bg-sky-500 px-6 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none disabled:opacity-50"
+          >
+            말했어요, 확인
+          </button>
+        </div>
       ) : (
         <div className="flex flex-col items-center gap-3">
           <button
@@ -102,7 +128,7 @@ export default function SpeakExerciseView({
             {listening ? '듣고 있어요...' : '마이크를 눌러 말해보세요'}
           </p>
           {heard && (
-            <p className="text-sm text-slate-400">인식된 문장: “{heard}”</p>
+            <p className="text-sm text-slate-400">인식된 문장: "{heard}"</p>
           )}
         </div>
       )}

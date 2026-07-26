@@ -7,8 +7,10 @@ import { shuffle } from '../lib/shuffle'
 import { collectExercisePool, collectUnlockedLessons } from '../lib/practice'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
+import MeaningBankExerciseView from '../components/MeaningBankExerciseView'
 import type {
   ChoiceExercise,
+  MeaningBankExercise,
   TokenChunk,
   WordBankExercise as WordBankExerciseType,
 } from '../data/types'
@@ -18,7 +20,7 @@ const REVIEW_XP = 8
 
 type Status = 'active' | 'correct' | 'incorrect'
 type TokenPoolEntry = { chunk: TokenChunk; i: number }
-type ReviewExercise = ChoiceExercise | WordBankExerciseType
+type ReviewExercise = ChoiceExercise | WordBankExerciseType | MeaningBankExercise
 
 export default function ReviewPage() {
   const navigate = useNavigate()
@@ -27,7 +29,7 @@ export default function ReviewPage() {
 
   const exercises = useMemo(() => {
     if (!course) return []
-    // collectExercisePool never returns 'speak' exercises (review is quiz-only).
+    // collectExercisePool never returns 'speak'/'repeat' exercises (review is quiz-only).
     const pool = collectExercisePool(
       collectUnlockedLessons(course, isLessonUnlocked),
     ) as ReviewExercise[]
@@ -118,9 +120,12 @@ export default function ReviewPage() {
     let correct = false
     if (exercise.type === 'choice') {
       correct = choiceSelected === exercise.answer
-    } else {
+    } else if (exercise.type === 'wordbank') {
       const words = pickedIndices.map((i) => exercise.tokens[i].text)
       correct = JSON.stringify(words) === JSON.stringify(exercise.answer)
+    } else {
+      const glosses = pickedIndices.map((i) => exercise.tokens[i].gloss)
+      correct = JSON.stringify(glosses) === JSON.stringify(exercise.answer)
     }
     setStatus(correct ? 'correct' : 'incorrect')
   }
@@ -175,10 +180,24 @@ export default function ReviewPage() {
             status={status}
             colors={colors}
             lang={course.speechLang}
+            seed={index}
             onSelect={setChoiceSelected}
           />
-        ) : (
+        ) : exercise.type === 'wordbank' ? (
           <WordBankExerciseView
+            exercise={exercise}
+            tokenPool={optionSets[index] as TokenPoolEntry[]}
+            pickedIndices={pickedIndices}
+            status={status}
+            lang={course.speechLang}
+            seed={index}
+            onPick={(i) => setPickedIndices((prev) => [...prev, i])}
+            onRemove={(pos) =>
+              setPickedIndices((prev) => prev.filter((_, idx) => idx !== pos))
+            }
+          />
+        ) : (
+          <MeaningBankExerciseView
             exercise={exercise}
             tokenPool={optionSets[index] as TokenPoolEntry[]}
             pickedIndices={pickedIndices}

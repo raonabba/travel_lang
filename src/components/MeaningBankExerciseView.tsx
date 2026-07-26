@@ -1,13 +1,12 @@
 import { useEffect } from 'react'
-import type { TokenChunk, WordBankExercise } from '../data/types'
-import { joinSpokenTokens } from '../lib/speech'
+import type { MeaningBankExercise, TokenChunk } from '../data/types'
 import { playCorrectSound } from '../lib/sound'
 import { pickCharacter } from '../data/characters'
 import CharacterBubble from './CharacterBubble'
 import SpeakerButton from './SpeakerButton'
 
 interface Props {
-  exercise: WordBankExercise
+  exercise: MeaningBankExercise
   tokenPool: { chunk: TokenChunk; i: number }[]
   pickedIndices: number[]
   status: 'active' | 'correct' | 'incorrect'
@@ -17,7 +16,7 @@ interface Props {
   onRemove: (position: number) => void
 }
 
-export default function WordBankExerciseView({
+export default function MeaningBankExerciseView({
   exercise,
   tokenPool,
   pickedIndices,
@@ -29,7 +28,7 @@ export default function WordBankExerciseView({
 }: Props) {
   const character = pickCharacter(seed)
   const pickedSet = new Set(pickedIndices)
-  const showGloss = status !== 'active'
+  const showHint = status !== 'active'
   const answerBoxState =
     status === 'correct'
       ? 'border-emerald-500 bg-emerald-50'
@@ -47,9 +46,20 @@ export default function WordBankExerciseView({
         {exercise.prompt}
       </h1>
       <CharacterBubble character={character} status={status}>
-        <p className="font-display text-xl font-extrabold text-slate-800">
-          {exercise.source}
-        </p>
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <p className="font-display text-xl font-extrabold text-slate-800">
+              {exercise.source}
+            </p>
+            {exercise.sourceNote && (
+              <p className="mt-1 text-sm text-slate-400">{exercise.sourceNote}</p>
+            )}
+            {exercise.sourcePronunciation && (
+              <p className="text-sm text-slate-400">[{exercise.sourcePronunciation}]</p>
+            )}
+          </div>
+          <SpeakerButton text={exercise.source} lang={lang} />
+        </div>
       </CharacterBubble>
 
       <div
@@ -69,25 +79,16 @@ export default function WordBankExerciseView({
             className="flex flex-col items-center rounded-xl border-2 border-slate-300 bg-white px-3 py-2"
           >
             <span className="font-bold text-slate-700">
-              {exercise.tokens[i].text}
+              {exercise.tokens[i].gloss}
             </span>
-            {showGloss && (
+            {showHint && (
               <span className="text-[11px] text-slate-400">
-                {exercise.tokens[i].gloss}
+                {exercise.tokens[i].text}
               </span>
             )}
           </button>
         ))}
       </div>
-
-      {status !== 'active' && (
-        <div className="mb-6 flex items-center gap-3">
-          <p className="font-display font-extrabold text-slate-600">
-            {joinSpokenTokens(exercise.answer, lang)}
-          </p>
-          <SpeakerButton text={joinSpokenTokens(exercise.answer, lang)} lang={lang} />
-        </div>
-      )}
 
       <div className="flex flex-wrap gap-2">
         {tokenPool.map(({ chunk, i }) =>
@@ -99,9 +100,9 @@ export default function WordBankExerciseView({
               onClick={() => onPick(i)}
               className="flex flex-col items-center rounded-xl border-2 border-slate-200 bg-white px-3 py-2 transition hover:bg-slate-100"
             >
-              <span className="font-bold text-slate-700">{chunk.text}</span>
-              {showGloss && (
-                <span className="text-[11px] text-slate-400">{chunk.gloss}</span>
+              <span className="font-bold text-slate-700">{chunk.gloss}</span>
+              {showHint && (
+                <span className="text-[11px] text-slate-400">{chunk.text}</span>
               )}
             </button>
           ),

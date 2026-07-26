@@ -1,4 +1,4 @@
-import type { Course } from '../types'
+import type { Course, DialogueScenario } from '../types'
 import { buildLesson, buildUnit, type Card } from '../courseBuilder'
 
 const greetings1: Card[] = [
@@ -11,9 +11,9 @@ const greetings1: Card[] = [
 
 const greetings2: Card[] = [
   { kr: '저는 여행객입니다', target: '私は旅行者です', note: 'わたしはりょこうしゃです', krPronunciation: '와타시와 료코-샤 데스', tokens: [{ text: '私は', gloss: '저는' }, { text: '旅行者', gloss: '여행자' }, { text: 'です', gloss: '~입니다' }] },
-  { kr: '처음 뵙겠습니다', target: 'はじめまして', krPronunciation: '하지메마시테', tokens: [{ text: 'はじめまして', gloss: '처음 뵙겠습니다' }] },
+  { kr: '처음 뵙겠습니다', target: 'はじめまして', krPronunciation: '하지메마시테', tokens: [{ text: 'はじめ', gloss: '처음' }, { text: 'まして', gloss: '뵙겠습니다' }] },
   { kr: '잘 부탁드립니다', target: 'よろしくお願いします', note: 'よろしくおねがいします', krPronunciation: '요로시쿠 오네가이시마스', tokens: [{ text: 'よろしく', gloss: '잘' }, { text: 'お願いします', gloss: '부탁드립니다' }] },
-  { kr: '실례합니다', target: '失礼します', note: 'しつれいします', krPronunciation: '시츠레-시마스', tokens: [{ text: '失礼します', gloss: '실례합니다' }] },
+  { kr: '실례합니다', target: '失礼します', note: 'しつれいします', krPronunciation: '시츠레-시마스', tokens: [{ text: '失礼', gloss: '실례' }, { text: 'します', gloss: '합니다' }] },
   { kr: '괜찮습니다', target: '大丈夫です', note: 'だいじょうぶです', krPronunciation: '다이죠-부 데스', tokens: [{ text: '大丈夫', gloss: '괜찮음' }, { text: 'です', gloss: '~입니다' }] },
 ]
 
@@ -65,6 +65,37 @@ const food2: Card[] = [
   { kr: '포장 가능한가요?', target: '持ち帰りできますか？', note: 'もちかえりできますか？', krPronunciation: '모치카에리 데키마스카', tokens: [{ text: '持ち帰り', gloss: '포장' }, { text: 'できますか', gloss: '가능한가요?' }] },
 ]
 
+const dialogues: DialogueScenario[] = [
+  {
+    id: 'ja-d-restaurant-entry',
+    title: '식당 입장 및 자리 안내',
+    turns: [
+      { speaker: 'staff', kr: '어서 오세요! 몇 분이십니까?', target: 'いらっしゃいませ！何名様ですか？', krPronunciation: '이라샤이마세! 난메이사마데스까?' },
+      { speaker: 'user', kr: '2명입니다.', target: '2人です。', krPronunciation: '후타리데스' },
+      { speaker: 'staff', kr: '이쪽으로 안내해 드리겠습니다.', target: 'こちらへどうぞ。', krPronunciation: '코치라에 도-조' },
+    ],
+  },
+  {
+    id: 'ja-d-ordering',
+    title: '주문하기',
+    turns: [
+      { speaker: 'staff', kr: '주문은 정하셨습니까?', target: 'ご注文はお決まりですか？', krPronunciation: '고츄-몬와 오키마리데스까?' },
+      { speaker: 'user', kr: '라멘 하나랑 생맥주 한 잔 주세요.', target: 'ラーメン1つと生ビールを1つください。', krPronunciation: '라-멘 히토츠토 나마비-루오 히토츠 쿠다사이' },
+      { speaker: 'staff', kr: '네, 라멘 하나와 생맥주 한 잔이네요. 잠시만 기다려 주세요.', target: 'はい、ラーメン1つと生ビール1つですね。少々お待ちください。', krPronunciation: '하이, 라-멘 히토츠토 나마비-루 히토츠데스네. 쇼-쇼- 오마치쿠다사이' },
+    ],
+  },
+  {
+    id: 'ja-d-shop-checkout',
+    title: '상점에서 계산 및 포장',
+    turns: [
+      { speaker: 'staff', kr: '선물용이십니까?', target: 'プレゼント用ですか？', krPronunciation: '푸레젠또요-데스까?' },
+      { speaker: 'user', kr: '아니요, 제가 쓸 거예요.', target: 'いいえ、自分用です。', krPronunciation: '이이에, 지분요-데스' },
+      { speaker: 'staff', kr: '봉투에 담아드릴까요?', target: '袋にお入れしますか？', krPronunciation: '후쿠로니 오이레시마스까?' },
+      { speaker: 'user', kr: '네, 부탁드려요.', target: 'はい、お願いします。', krPronunciation: '하이, 오네가이시마스' },
+    ],
+  },
+]
+
 export const jaCourse: Course = {
   id: 'ja',
   title: '일본어',
@@ -72,6 +103,7 @@ export const jaCourse: Course = {
   tagline: '여행하며 배우는 일본어',
   color: 'orange',
   speechLang: 'ja-JP',
+  dialogues,
   units: [
     buildUnit(
       'ja-u1',

@@ -45,6 +45,30 @@ function buildChoice(cards: Card[], index: number): Exercise {
   }
 }
 
+function buildMeaning(cards: Card[], index: number): Exercise {
+  const card = cards[index]
+  if (card.tokens.length <= 1) return buildChoice(cards, index)
+  const cardGlosses = new Set(card.tokens.map((t) => t.gloss))
+  const otherTokens = cards
+    .filter((_, i) => i !== index)
+    .flatMap((c) => c.tokens)
+    .filter((t) => !cardGlosses.has(t.gloss))
+  const distractorTokens = rotate(otherTokens, index).slice(0, 3)
+  const tokens: TokenChunk[] = rotate(
+    [...card.tokens, ...distractorTokens],
+    (index * 2) % Math.max(card.tokens.length + distractorTokens.length, 1),
+  )
+  return {
+    type: 'meaningBank',
+    prompt: '이 표현의 뜻을 순서대로 조합하세요',
+    source: card.target,
+    sourceNote: card.note,
+    sourcePronunciation: card.krPronunciation,
+    tokens,
+    answer: card.tokens.map((t) => t.gloss),
+  }
+}
+
 function buildWordBank(cards: Card[], index: number): Exercise {
   const card = cards[index]
   const cardTexts = new Set(card.tokens.map((t) => t.text))
@@ -88,7 +112,7 @@ export function buildLesson(id: string, title: string, cards: Card[]): Lesson {
   const exercises = cards.flatMap((_, i) => [
     buildLearn(cards[i]),
     buildRepeat(cards[i]),
-    buildChoice(cards, i),
+    buildMeaning(cards, i),
     buildWordBank(cards, i),
     buildSpeak(cards[i]),
   ])

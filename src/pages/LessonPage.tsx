@@ -6,11 +6,11 @@ import { courseColorClasses } from '../lib/colors'
 import { shuffle } from '../lib/shuffle'
 import { getNextLesson } from '../lib/practice'
 import { speak, joinSpokenTokens } from '../lib/speech'
-import { canRecognizeSpeech } from '../lib/speechRecognition'
 import LearnExerciseView from '../components/LearnExerciseView'
 import RepeatExerciseView from '../components/RepeatExerciseView'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
+import MeaningBankExerciseView from '../components/MeaningBankExerciseView'
 import SpeakExerciseView from '../components/SpeakExerciseView'
 import LessonResult from '../components/LessonResult'
 import type { Exercise, TokenChunk } from '../data/types'
@@ -34,10 +34,7 @@ export default function LessonPage() {
 
   const exercises: Exercise[] = useMemo(() => {
     if (!lesson) return []
-    return canRecognizeSpeech()
-      ? lesson.exercises
-      : lesson.exercises.filter((e) => e.type !== 'speak' && e.type !== 'repeat')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return lesson.exercises
   }, [lesson])
 
   const [index, setIndex] = useState(() => {
@@ -65,7 +62,7 @@ export default function LessonPage() {
     return exercises.map((ex): string[] | TokenPoolEntry[] | null =>
       ex.type === 'choice'
         ? shuffle(ex.options)
-        : ex.type === 'wordbank'
+        : ex.type === 'wordbank' || ex.type === 'meaningBank'
           ? shuffle(ex.tokens.map((chunk, i) => ({ chunk, i })))
           : null,
     )
@@ -79,7 +76,7 @@ export default function LessonPage() {
     if (!course || !exercise || finished) return
     if (exercise.type === 'learn' || exercise.type === 'repeat') {
       speak(exercise.target, course.speechLang)
-    } else if (exercise.type === 'choice') {
+    } else if (exercise.type === 'choice' || exercise.type === 'meaningBank') {
       speak(exercise.source, course.speechLang)
     } else if (exercise.type === 'wordbank') {
       speak(joinSpokenTokens(exercise.answer, course.speechLang), course.speechLang)
@@ -140,13 +137,21 @@ export default function LessonPage() {
   }
 
   function checkAnswer() {
-    if (exercise.type !== 'choice' && exercise.type !== 'wordbank') return
+    if (
+      exercise.type !== 'choice' &&
+      exercise.type !== 'wordbank' &&
+      exercise.type !== 'meaningBank'
+    )
+      return
     let correct = false
     if (exercise.type === 'choice') {
       correct = choiceSelected === exercise.answer
-    } else {
+    } else if (exercise.type === 'wordbank') {
       const words = pickedIndices.map((i) => exercise.tokens[i].text)
       correct = JSON.stringify(words) === JSON.stringify(exercise.answer)
+    } else {
+      const glosses = pickedIndices.map((i) => exercise.tokens[i].gloss)
+      correct = JSON.stringify(glosses) === JSON.stringify(exercise.answer)
     }
     if (correct) {
       setStatus('correct')
@@ -183,7 +188,7 @@ export default function LessonPage() {
   const canCheck =
     exercise.type === 'choice'
       ? choiceSelected !== null
-      : exercise.type === 'wordbank'
+      : exercise.type === 'wordbank' || exercise.type === 'meaningBank'
         ? pickedIndices.length === exercise.answer.length
         : false
 
@@ -230,10 +235,24 @@ export default function LessonPage() {
             status={status}
             colors={colors}
             lang={course.speechLang}
+            seed={index}
             onSelect={setChoiceSelected}
           />
         ) : exercise.type === 'wordbank' ? (
           <WordBankExerciseView
+            exercise={exercise}
+            tokenPool={optionSets[index] as TokenPoolEntry[]}
+            pickedIndices={pickedIndices}
+            status={status}
+            lang={course.speechLang}
+            seed={index}
+            onPick={(i) => setPickedIndices((prev) => [...prev, i])}
+            onRemove={(pos) =>
+              setPickedIndices((prev) => prev.filter((_, idx) => idx !== pos))
+            }
+          />
+        ) : exercise.type === 'meaningBank' ? (
+          <MeaningBankExerciseView
             exercise={exercise}
             tokenPool={optionSets[index] as TokenPoolEntry[]}
             pickedIndices={pickedIndices}
@@ -279,7 +298,9 @@ export default function LessonPage() {
             </>
           )}
           {status === 'active' &&
-            (exercise.type === 'choice' || exercise.type === 'wordbank') && (
+            (exercise.type === 'choice' ||
+              exercise.type === 'wordbank' ||
+              exercise.type === 'meaningBank') && (
               <>
                 <span />
                 <button
@@ -316,7 +337,7 @@ export default function LessonPage() {
                 정답:{' '}
                 {exercise.type === 'choice'
                   ? exercise.answer
-                  : exercise.type === 'wordbank'
+                  : exercise.type === 'wordbank' || exercise.type === 'meaningBank'
                     ? exercise.answer.join(' ')
                     : exercise.type === 'speak'
                       ? exercise.answer

@@ -25,7 +25,9 @@ export function collectExercisePool(lessons: UnlockedLesson[]): Exercise[] {
   // checks (those live in the guided lesson flow and the conversation
   // practice mode instead).
   return lessons.flatMap(({ lesson }) =>
-    lesson.exercises.filter((e) => e.type === 'choice' || e.type === 'wordbank'),
+    lesson.exercises.filter(
+      (e) => e.type === 'choice' || e.type === 'wordbank' || e.type === 'meaningBank',
+    ),
   )
 }
 

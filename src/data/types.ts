@@ -1,4 +1,4 @@
-export type ExerciseType = 'learn' | 'repeat' | 'choice' | 'wordbank' | 'speak'
+export type ExerciseType = 'learn' | 'repeat' | 'choice' | 'wordbank' | 'meaningBank' | 'speak'
 
 export interface TokenChunk {
   text: string
@@ -39,6 +39,19 @@ export interface WordBankExercise {
   answer: string[]
 }
 
+/** Mirror of WordBankExercise in the opposite direction: the learner
+ * assembles the Korean meaning of a target-language sentence by picking
+ * gloss chunks in order, instead of choosing one whole-sentence option. */
+export interface MeaningBankExercise {
+  type: 'meaningBank'
+  prompt: string
+  source: string
+  sourceNote?: string
+  sourcePronunciation?: string
+  tokens: TokenChunk[]
+  answer: string[]
+}
+
 export interface SpeakExercise {
   type: 'speak'
   prompt: string
@@ -55,6 +68,7 @@ export type Exercise =
   | RepeatExercise
   | ChoiceExercise
   | WordBankExercise
+  | MeaningBankExercise
   | SpeakExercise
 
 export interface Card {
@@ -93,6 +107,23 @@ export interface Unit {
   relatedShort?: RelatedShort
 }
 
+/** One line of a scripted multi-turn conversation. The learner always
+ * plays the 'user' role; 'staff' lines are context played back via TTS. */
+export interface DialogueTurn {
+  speaker: 'staff' | 'user'
+  /** Korean meaning of this line */
+  kr: string
+  target: string
+  note?: string
+  krPronunciation?: string
+}
+
+export interface DialogueScenario {
+  id: string
+  title: string
+  turns: DialogueTurn[]
+}
+
 export interface Course {
   id: string
   title: string
@@ -103,6 +134,8 @@ export interface Course {
   speechLang: string
   comingSoon?: boolean
   units: Unit[]
+  /** Scripted conversation-practice scenarios for the 회화 연습 mode */
+  dialogues?: DialogueScenario[]
 }
 
 export type CourseColor = 'green' | 'blue' | 'orange' | 'violet'
