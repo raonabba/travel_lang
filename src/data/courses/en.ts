@@ -1,4 +1,4 @@
-import type { Course } from '../types'
+import type { Course, DialogueScenario } from '../types'
 import { buildLesson, buildUnit, type Card } from '../courseBuilder'
 
 const greetings1: Card[] = [
@@ -65,6 +65,39 @@ const food2: Card[] = [
   { kr: '포장 가능한가요?', target: 'Can I get this to go?', krPronunciation: '캔 아이 겟 디스 투 고우?', idiomatic: true, tokens: [{ text: 'Can', gloss: '~할 수 있다' }, { text: 'I', gloss: '나는' }, { text: 'get', gloss: '가져가다' }, { text: 'this', gloss: '이것을' }, { text: 'to', gloss: '~으로' }, { text: 'go?', gloss: '포장?' }] },
 ]
 
+const dialogues: DialogueScenario[] = [
+  {
+    id: 'en-d-immigration',
+    title: '공항 입국 심사',
+    turns: [
+      { speaker: 'staff', kr: '방문 목적이 무엇인가요?', target: "What's the purpose of your visit?", krPronunciation: '왓츠 더 퍼포즈 오브 유어 비짓?' },
+      { speaker: 'user', kr: '저는 관광하러 왔어요.', target: "I'm here for tourism.", krPronunciation: '아임 히어 포 투어리즘' },
+      { speaker: 'staff', kr: '얼마나 머무르실 건가요?', target: 'How long will you stay?', krPronunciation: '하우 롱 윌 유 스테이?' },
+      { speaker: 'user', kr: '일주일이요.', target: 'For one week.', krPronunciation: '포 원 위크' },
+    ],
+  },
+  {
+    id: 'en-d-hotel-checkin',
+    title: '호텔 체크인',
+    turns: [
+      { speaker: 'staff', kr: '환영합니다! 예약하셨나요?', target: 'Welcome! Do you have a reservation?', krPronunciation: '웰컴! 두 유 해브 어 레저베이션?' },
+      { speaker: 'user', kr: '네, 민수 이름으로요.', target: "Yes, under the name Minsu.", krPronunciation: '예스, 언더 더 네임 민수' },
+      { speaker: 'staff', kr: '여기 열쇠 있습니다. 조식은 7시예요.', target: "Here's your key. Breakfast is at 7.", krPronunciation: '히얼즈 유어 키. 브렉퍼스트 이즈 앳 세븐' },
+      { speaker: 'user', kr: '정말 감사합니다.', target: 'Thank you very much.', krPronunciation: '땡큐 베리 머치' },
+    ],
+  },
+  {
+    id: 'en-d-restaurant',
+    title: '식당에서 주문하기',
+    turns: [
+      { speaker: 'staff', kr: '주문하시겠어요?', target: 'Are you ready to order?', krPronunciation: '아 유 레디 투 오더?' },
+      { speaker: 'user', kr: '파스타 주세요.', target: "I'll have the pasta, please.", krPronunciation: '아일 해브 더 파스타, 플리즈' },
+      { speaker: 'staff', kr: '음료는요?', target: 'Anything to drink?', krPronunciation: '애니씽 투 드링크?' },
+      { speaker: 'user', kr: '물만 주세요, 감사합니다.', target: 'Just water, thanks.', krPronunciation: '저스트 워터, 땡스' },
+    ],
+  },
+]
+
 export const enCourse: Course = {
   id: 'en',
   title: '영어',
@@ -72,6 +105,7 @@ export const enCourse: Course = {
   tagline: '여행하며 배우는 영어',
   color: 'blue',
   speechLang: 'en-US',
+  dialogues,
   units: [
     buildUnit('en-u1', '인사 & 기본 표현', '기본 인사말과 예의 표현을 배워요', '🙏', [
       buildLesson('en-u1-l1', '기본 인사', greetings1),

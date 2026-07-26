@@ -4,7 +4,7 @@ import { useProgress } from '../state/progress'
 import { getCourse } from '../data/courses'
 import { courseColorClasses } from '../lib/colors'
 import { shuffle } from '../lib/shuffle'
-import { collectExercisePool, collectUnlockedLessons } from '../lib/practice'
+import { collectExercisePool, collectUnlockedLessons, weightedSample } from '../lib/practice'
 import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
 import MeaningBankExerciseView from '../components/MeaningBankExerciseView'
@@ -25,7 +25,8 @@ type ReviewExercise = ChoiceExercise | WordBankExerciseType | MeaningBankExercis
 
 export default function ReviewPage() {
   const navigate = useNavigate()
-  const { selectedCourseId, isLessonUnlocked, gainXp } = useProgress()
+  const { selectedCourseId, isLessonUnlocked, gainXp, getCardWeight, recordCardResult } =
+    useProgress()
   const course = selectedCourseId ? getCourse(selectedCourseId) : undefined
 
   const exercises = useMemo(() => {
@@ -34,7 +35,8 @@ export default function ReviewPage() {
     const pool = collectExercisePool(
       collectUnlockedLessons(course, isLessonUnlocked),
     ) as ReviewExercise[]
-    return shuffle(pool).slice(0, REVIEW_LENGTH)
+    // Words missed more recently are weighted to come up more often.
+    return weightedSample(pool, REVIEW_LENGTH, (target) => getCardWeight(course.id, target))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [course])
 
@@ -129,6 +131,7 @@ export default function ReviewPage() {
       correct = JSON.stringify(glosses) === JSON.stringify(exercise.answer)
     }
     setStatus(correct ? 'correct' : 'incorrect')
+    recordCardResult(course!.id, exercise.cardTarget, correct)
   }
 
   function handleRetry() {

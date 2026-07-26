@@ -28,6 +28,7 @@ export default function LessonPage() {
     lessonPosition,
     saveLessonPosition,
     clearLessonPosition,
+    recordCardResult,
   } = useProgress()
   const { course, unit, lesson } = selectedCourseId
     ? getLesson(selectedCourseId, unitId, lessonId)
@@ -160,12 +161,16 @@ export default function LessonPage() {
       setStatus('incorrect')
       setMistakes((m) => m + 1)
     }
+    recordCardResult(course!.id, exercise.cardTarget, correct)
   }
 
   function handleMicResult(correct: boolean) {
     if (status !== 'active') return
     setStatus(correct ? 'correct' : 'incorrect')
     if (!correct) setMistakes((m) => m + 1)
+    if (exercise.type === 'repeat' || exercise.type === 'speak') {
+      recordCardResult(course!.id, exercise.cardTarget, correct)
+    }
   }
 
   function handleRetry() {

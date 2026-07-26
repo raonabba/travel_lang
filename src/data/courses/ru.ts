@@ -1,4 +1,4 @@
-import type { Course } from '../types'
+import type { Course, DialogueScenario } from '../types'
 import { buildLesson, buildUnit, type Card } from '../courseBuilder'
 
 const greetings1: Card[] = [
@@ -81,6 +81,39 @@ const local2: Card[] = [
   { kr: '와이파이 비밀번호가 뭐예요?', target: 'Какой пароль от Wi-Fi?', note: 'kakoy paral at Wi-Fi?', krPronunciation: '까꼬이 빠롤 앗 와이파이?', tokens: [{ text: 'Какой', gloss: '무슨' }, { text: 'пароль', gloss: '비밀번호인가요' }, { text: 'от', gloss: '~의' }, { text: 'Wi-Fi?', gloss: '와이파이?' }] },
 ]
 
+const dialogues: DialogueScenario[] = [
+  {
+    id: 'ru-d-immigration',
+    title: '공항 입국 심사',
+    turns: [
+      { speaker: 'staff', kr: '방문 목적이 무엇인가요?', target: 'Цель вашего визита?', krPronunciation: '첼 바셰바 비지타?' },
+      { speaker: 'user', kr: '관광이요.', target: 'Туризм.', krPronunciation: '뚜리즘' },
+      { speaker: 'staff', kr: '며칠 머무르실 건가요?', target: 'Сколько дней вы пробудете?', krPronunciation: '스꼴까 드녜이 브이 쁘라부졔쩨?' },
+      { speaker: 'user', kr: '일주일이요.', target: 'Одна неделя.', krPronunciation: '아드나 니젤랴' },
+    ],
+  },
+  {
+    id: 'ru-d-car-rental',
+    title: '렌터카 대여',
+    turns: [
+      { speaker: 'staff', kr: '안녕하세요! 어떤 차를 렌트하고 싶으세요?', target: 'Здравствуйте! Что вы хотите арендовать?', krPronunciation: '즈드라스트부이쩨! 쉬또 브이 하찌쩨 아린다바찌?' },
+      { speaker: 'user', kr: '차를 렌트하고 싶어요.', target: 'Я хочу арендовать машину.', krPronunciation: '야 하추 아린다바찌 마시누' },
+      { speaker: 'staff', kr: '국제 운전면허증 있으세요?', target: 'У вас есть международные права?', krPronunciation: '우 바스 예스찌 미쥬두나로드니예 쁘라바?' },
+      { speaker: 'user', kr: '네, 여기 있어요.', target: 'Да, вот они.', krPronunciation: '다, 봇 아니' },
+    ],
+  },
+  {
+    id: 'ru-d-restaurant',
+    title: '식당에서 주문하기',
+    turns: [
+      { speaker: 'staff', kr: '안녕하세요! 몇 분이세요?', target: 'Здравствуйте! Сколько вас?', krPronunciation: '즈드라스트부이쩨! 스꼴까 바스?' },
+      { speaker: 'user', kr: '두 명이요.', target: 'Двое, пожалуйста.', krPronunciation: '드보예, 빠잘루스따' },
+      { speaker: 'staff', kr: '주문하시겠어요?', target: 'Что будете заказывать?', krPronunciation: '쉬또 부졔쩨 자까지바찌?' },
+      { speaker: 'user', kr: '보르시와 차 주세요.', target: 'Борщ и чай, пожалуйста.', krPronunciation: '보르쉬 이 차이, 빠잘루스따' },
+    ],
+  },
+]
+
 export const ruCourse: Course = {
   id: 'ru',
   title: '러시아어',
@@ -88,6 +121,7 @@ export const ruCourse: Course = {
   tagline: '알마티 여행을 위한 러시아어',
   color: 'violet',
   speechLang: 'ru-RU',
+  dialogues,
   units: [
     buildUnit('ru-u1', '인사 & 기본 표현', '기본 인사말과 의사소통 표현을 배워요', '🙏', [
       buildLesson('ru-u1-l1', '기본 인사', greetings1),

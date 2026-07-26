@@ -24,6 +24,11 @@ interface ProgressData {
   lastActiveDate: string | null
   completedLessons: string[]
   lessonPosition: LessonPosition | null
+  /** Per-card mistake score (courseId:target -> score), used to weight
+   * which words come up more often in review. Wrong answers raise the
+   * score, correct answers lower it, so recently-missed words surface
+   * more until they're answered right again. */
+  cardStats: Record<string, number>
 }
 
 const DEFAULT_DATA: ProgressData = {
@@ -33,6 +38,7 @@ const DEFAULT_DATA: ProgressData = {
   lastActiveDate: null,
   completedLessons: [],
   lessonPosition: null,
+  cardStats: {},
 }
 
 function loadData(): ProgressData {
@@ -56,6 +62,10 @@ function yesterdayStr(): string {
   return d.toISOString().slice(0, 10)
 }
 
+function cardKey(courseId: string, target: string): string {
+  return `${courseId}:${target}`
+}
+
 interface ProgressContextValue {
   selectedCourseId: string | null
   xp: number
@@ -73,6 +83,10 @@ interface ProgressContextValue {
     index: number,
   ) => void
   clearLessonPosition: () => void
+  /** Call whenever an exercise is graded, so mistakes bias future review. */
+  recordCardResult: (courseId: string, target: string, correct: boolean) => void
+  /** Sampling weight for a card in review — higher for recently-missed words. */
+  getCardWeight: (courseId: string, target: string) => number
 }
 
 const ProgressContext = createContext<ProgressContextValue | null>(null)
@@ -144,6 +158,15 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         })),
       clearLessonPosition: () =>
         setData((d) => ({ ...d, lessonPosition: null })),
+      recordCardResult: (courseId: string, target: string, correct: boolean) =>
+        setData((d) => {
+          const key = cardKey(courseId, target)
+          const current = d.cardStats[key] ?? 0
+          const next = correct ? Math.max(0, current - 1) : current + 2
+          return { ...d, cardStats: { ...d.cardStats, [key]: next } }
+        }),
+      getCardWeight: (courseId: string, target: string) =>
+        1 + (data.cardStats[cardKey(courseId, target)] ?? 0),
     }),
     [data],
   )

@@ -24,6 +24,7 @@ function buildRepeat(card: Card): Exercise {
     target: card.target,
     note: card.note,
     krPronunciation: card.krPronunciation,
+    cardTarget: card.target,
   }
 }
 
@@ -42,6 +43,7 @@ function buildChoice(cards: Card[], index: number): Exercise {
     sourcePronunciation: card.krPronunciation,
     options,
     answer: card.kr,
+    cardTarget: card.target,
   }
 }
 
@@ -67,6 +69,7 @@ function buildMeaning(cards: Card[], index: number): Exercise {
     sourcePronunciation: card.krPronunciation,
     tokens,
     answer: order.map((i) => card.tokens[i].gloss),
+    cardTarget: card.target,
   }
 }
 
@@ -88,6 +91,7 @@ function buildWordBank(cards: Card[], index: number): Exercise {
     source: card.kr,
     tokens,
     answer: card.tokens.map((t) => t.text),
+    cardTarget: card.target,
   }
 }
 
@@ -99,23 +103,23 @@ function buildSpeak(card: Card): Exercise {
     answer: card.target,
     note: card.note,
     krPronunciation: card.krPronunciation,
+    cardTarget: card.target,
   }
 }
 
 /**
  * Each card is taught word-first: a plain "learn" step introduces the
- * meaning before any quiz, then a listen-and-repeat pronunciation check,
- * then recognition (choice), then active reconstruction (word bank), then
- * a recall-and-speak check — so a sentence is never the very first thing
- * the learner sees, and every card gets full listening + speaking practice.
+ * meaning, then one active-recall quiz and one mic exercise. Which quiz
+ * (meaning-assembly vs word-bank) and which mic exercise (listen-and-repeat
+ * vs recall-and-speak) alternates by card, so a full lesson still touches
+ * every exercise type without stacking all four onto every single card —
+ * that made lessons feel long and repetitive.
  */
 export function buildLesson(id: string, title: string, cards: Card[]): Lesson {
   const exercises = cards.flatMap((_, i) => [
     buildLearn(cards[i]),
-    buildRepeat(cards[i]),
-    buildMeaning(cards, i),
-    buildWordBank(cards, i),
-    buildSpeak(cards[i]),
+    i % 2 === 0 ? buildMeaning(cards, i) : buildWordBank(cards, i),
+    i % 2 === 0 ? buildRepeat(cards[i]) : buildSpeak(cards[i]),
   ])
   return { id, title, exercises, cards }
 }

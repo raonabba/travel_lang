@@ -19,6 +19,8 @@ export interface RepeatExercise {
   target: string
   note?: string
   krPronunciation?: string
+  /** Originating card's target phrase, used to weight future review by mistakes. */
+  cardTarget: string
 }
 
 export interface ChoiceExercise {
@@ -29,6 +31,8 @@ export interface ChoiceExercise {
   sourcePronunciation?: string
   options: string[]
   answer: string
+  /** Originating card's target phrase, used to weight future review by mistakes. */
+  cardTarget: string
 }
 
 export interface WordBankExercise {
@@ -37,6 +41,8 @@ export interface WordBankExercise {
   source: string
   tokens: TokenChunk[]
   answer: string[]
+  /** Originating card's target phrase, used to weight future review by mistakes. */
+  cardTarget: string
 }
 
 /** Mirror of WordBankExercise in the opposite direction: the learner
@@ -50,6 +56,8 @@ export interface MeaningBankExercise {
   sourcePronunciation?: string
   tokens: TokenChunk[]
   answer: string[]
+  /** Originating card's target phrase, used to weight future review by mistakes. */
+  cardTarget: string
 }
 
 export interface SpeakExercise {
@@ -61,6 +69,8 @@ export interface SpeakExercise {
   answer: string
   note?: string
   krPronunciation?: string
+  /** Originating card's target phrase, used to weight future review by mistakes. */
+  cardTarget: string
 }
 
 export type Exercise =

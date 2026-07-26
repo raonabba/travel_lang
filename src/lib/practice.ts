@@ -35,6 +35,33 @@ export function collectCardPool(lessons: UnlockedLesson[]): Card[] {
   return lessons.flatMap(({ lesson }) => lesson.cards)
 }
 
+/** Weighted sample without replacement — items whose card has a higher
+ * weight (e.g. more recent mistakes) are more likely to be picked, so
+ * review sessions surface previously-missed words more often. */
+export function weightedSample<T extends { cardTarget: string }>(
+  pool: T[],
+  count: number,
+  getWeight: (target: string) => number,
+): T[] {
+  const remaining = pool.map((item) => ({ item, weight: Math.max(0.0001, getWeight(item.cardTarget)) }))
+  const result: T[] = []
+  for (let i = 0; i < count && remaining.length > 0; i++) {
+    const total = remaining.reduce((sum, r) => sum + r.weight, 0)
+    let r = Math.random() * total
+    let pickIndex = remaining.length - 1
+    for (let j = 0; j < remaining.length; j++) {
+      r -= remaining[j].weight
+      if (r <= 0) {
+        pickIndex = j
+        break
+      }
+    }
+    result.push(remaining[pickIndex].item)
+    remaining.splice(pickIndex, 1)
+  }
+  return result
+}
+
 export function getNextLesson(
   course: Course,
   unitId: string,

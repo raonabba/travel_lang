@@ -383,6 +383,7 @@ function RandomDeckPractice() {
         answer: card.target,
         note: card.note,
         krPronunciation: card.krPronunciation,
+        cardTarget: card.target,
       }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [course])
