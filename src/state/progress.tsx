@@ -133,19 +133,9 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
             lessonPosition: null,
           }
         }),
-      isLessonUnlocked: (course: Course, unitId: string, lessonId: string) => {
-        const flat = course.units.flatMap((u) =>
-          u.lessons.map((l) => ({ unitId: u.id, lessonId: l.id })),
-        )
-        const idx = flat.findIndex(
-          (f) => f.unitId === unitId && f.lessonId === lessonId,
-        )
-        if (idx <= 0) return true
-        const prev = flat[idx - 1]
-        return new Set(data.completedLessons).has(
-          `${course.id}:${prev.lessonId}`,
-        )
-      },
+      // All lessons are freely accessible — the learner can jump straight to
+      // whatever's relevant to their trip instead of unlocking sequentially.
+      isLessonUnlocked: () => true,
       saveLessonPosition: (
         courseId: string,
         unitId: string,
