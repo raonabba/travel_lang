@@ -12,6 +12,7 @@ import ChoiceExerciseView from '../components/ChoiceExerciseView'
 import WordBankExerciseView from '../components/WordBankExerciseView'
 import MeaningBankExerciseView from '../components/MeaningBankExerciseView'
 import SpeakExerciseView from '../components/SpeakExerciseView'
+import AnswerWords from '../components/AnswerWords'
 import LessonResult from '../components/LessonResult'
 import type { Exercise, TokenChunk } from '../data/types'
 
@@ -332,27 +333,38 @@ export default function LessonPage() {
             </>
           )}
           {status === 'incorrect' && (
-            <>
+            <div className="flex w-full flex-col gap-3">
               <p className="font-display font-extrabold text-rose-600">
                 정답:{' '}
-                {exercise.type === 'choice'
-                  ? exercise.answer
-                  : exercise.type === 'wordbank' || exercise.type === 'meaningBank'
-                    ? exercise.answer.join(' ')
-                    : exercise.type === 'speak'
-                      ? exercise.answer
-                      : exercise.type === 'repeat'
-                        ? exercise.target
-                        : ''}
+                {exercise.type === 'choice' ? (
+                  exercise.answer
+                ) : exercise.type === 'wordbank' || exercise.type === 'meaningBank' ? (
+                  <AnswerWords words={exercise.answer} />
+                ) : exercise.type === 'speak' ? (
+                  exercise.answer
+                ) : exercise.type === 'repeat' ? (
+                  exercise.target
+                ) : (
+                  ''
+                )}
               </p>
-              <button
-                type="button"
-                onClick={handleRetry}
-                className="rounded-2xl bg-rose-500 px-8 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
-              >
-                다시 시도
-              </button>
-            </>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleContinue}
+                  className="flex-1 rounded-2xl bg-slate-200 px-4 py-3 font-display font-extrabold text-slate-600 transition active:translate-y-1"
+                >
+                  다음
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="flex-1 rounded-2xl bg-rose-500 px-4 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

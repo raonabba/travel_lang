@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { MeaningBankExercise, TokenChunk } from '../data/types'
 import { playCorrectSound } from '../lib/sound'
 import { pickCharacter } from '../data/characters'
@@ -28,7 +28,7 @@ export default function MeaningBankExerciseView({
 }: Props) {
   const character = pickCharacter(seed)
   const pickedSet = new Set(pickedIndices)
-  const showHint = status !== 'active'
+  const [hintShown, setHintShown] = useState(false)
   const answerBoxState =
     status === 'correct'
       ? 'border-emerald-500 bg-emerald-50'
@@ -81,7 +81,7 @@ export default function MeaningBankExerciseView({
             <span className="font-bold text-slate-700">
               {exercise.tokens[i].gloss}
             </span>
-            {showHint && (
+            {hintShown && (
               <span className="text-[11px] text-slate-400">
                 {exercise.tokens[i].text}
               </span>
@@ -89,6 +89,16 @@ export default function MeaningBankExerciseView({
           </button>
         ))}
       </div>
+
+      {!hintShown && (
+        <button
+          type="button"
+          onClick={() => setHintShown(true)}
+          className="mb-4 w-full text-center text-sm font-bold text-slate-400 underline underline-offset-2"
+        >
+          모르겠어요, 힌트 보기
+        </button>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {tokenPool.map(({ chunk, i }) =>
@@ -101,7 +111,7 @@ export default function MeaningBankExerciseView({
               className="flex flex-col items-center rounded-xl border-2 border-slate-200 bg-white px-3 py-2 transition hover:bg-slate-100"
             >
               <span className="font-bold text-slate-700">{chunk.gloss}</span>
-              {showHint && (
+              {hintShown && (
                 <span className="text-[11px] text-slate-400">{chunk.text}</span>
               )}
             </button>

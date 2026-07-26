@@ -28,7 +28,10 @@ export default function SpeakExerciseView({
   const [heard, setHeard] = useState<string | null>(null)
   const [hintShown, setHintShown] = useState(false)
   const supported = canRecognizeSpeech()
-  const revealed = hintShown || status !== 'active'
+  // Stay hidden until the learner either asks for a hint or starts
+  // speaking, so recall still happens from memory — but once they're
+  // mid-attempt, reveal the text so the live gauge has something to color.
+  const revealed = hintShown || status !== 'active' || listening
 
   useEffect(() => {
     if (status === 'correct') playCorrectSound()

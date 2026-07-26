@@ -338,16 +338,25 @@ function ScenarioPractice({
             </>
           )}
           {turn.speaker === 'user' && status === 'incorrect' && (
-            <>
+            <div className="flex w-full flex-col gap-3">
               <p className="font-display font-extrabold text-rose-600">다시 연습해봐요</p>
-              <button
-                type="button"
-                onClick={handleRetry}
-                className="rounded-2xl bg-rose-500 px-8 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
-              >
-                다시 시도
-              </button>
-            </>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleContinue}
+                  className="flex-1 rounded-2xl bg-slate-200 px-4 py-3 font-display font-extrabold text-slate-600 transition active:translate-y-1"
+                >
+                  다음
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="flex-1 rounded-2xl bg-rose-500 px-4 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -498,24 +507,38 @@ function RandomDeckPractice() {
               : 'border-rose-200 bg-rose-50'
           }`}
         >
-          <div className="mx-auto flex max-w-md items-center justify-between gap-4">
-            <p
-              className={`font-display font-extrabold ${
-                status === 'correct' ? 'text-emerald-600' : 'text-rose-600'
-              }`}
-            >
-              {status === 'correct' ? '통과했어요! 🎉' : '다시 연습해봐요'}
-            </p>
-            <button
-              type="button"
-              onClick={status === 'correct' ? handleContinue : handleRetry}
-              className={`rounded-2xl px-8 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none ${
-                status === 'correct' ? 'bg-emerald-500' : 'bg-rose-500'
-              }`}
-            >
-              {status === 'correct' ? '계속하기' : '다시 시도'}
-            </button>
-          </div>
+          {status === 'correct' ? (
+            <div className="mx-auto flex max-w-md items-center justify-between gap-4">
+              <p className="font-display font-extrabold text-emerald-600">통과했어요! 🎉</p>
+              <button
+                type="button"
+                onClick={handleContinue}
+                className="rounded-2xl bg-emerald-500 px-8 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
+              >
+                계속하기
+              </button>
+            </div>
+          ) : (
+            <div className="mx-auto flex max-w-md flex-col gap-3">
+              <p className="font-display font-extrabold text-rose-600">다시 연습해봐요</p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleContinue}
+                  className="flex-1 rounded-2xl bg-slate-200 px-4 py-3 font-display font-extrabold text-slate-600 transition active:translate-y-1"
+                >
+                  다음
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="flex-1 rounded-2xl bg-rose-500 px-4 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
+                >
+                  다시 시도
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
