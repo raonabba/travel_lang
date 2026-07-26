@@ -6,7 +6,7 @@ import { courseColorClasses } from '../lib/colors'
 import { shuffle } from '../lib/shuffle'
 import { collectCardPool, collectUnlockedLessons } from '../lib/practice'
 import {
-  bestPrefixRatio,
+  bestMatchRatio,
   canRecognizeSpeech,
   createRecognizer,
   isSpokenMatch,
@@ -120,7 +120,7 @@ function ScenarioPractice({
     recognizer.onresult = (event) => {
       const last = event.results[event.results.length - 1]
       const transcript = last[0].transcript
-      setProgress(bestPrefixRatio(readings, transcript))
+      setProgress(bestMatchRatio(readings, transcript))
       if (last.isFinal) {
         handleMicResult(isSpokenMatch(readings, transcript))
       }

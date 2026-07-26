@@ -82,6 +82,20 @@ export interface Card {
   krPronunciation?: string
   /** Target-language phrase split into chunks for the word-bank exercise, each with a Korean gloss */
   tokens: TokenChunk[]
+  /**
+   * Correct order of `tokens` indices for the meaningBank exercise's answer,
+   * when the target language's word order (e.g. English SVO) doesn't match
+   * natural Korean order (SOV) if the glosses are read off token-by-token.
+   * Defaults to tokens' own order when omitted.
+   */
+  krOrder?: number[]
+  /**
+   * True when the card is an idiomatic expression whose per-word glosses
+   * don't compositionally add up to the translation in any order (e.g.
+   * "Nice to meet you" → 반갑습니다) — such cards fall back to the simple
+   * multiple-choice quiz instead of the word-by-word meaningBank exercise.
+   */
+  idiomatic?: boolean
 }
 
 export interface Lesson {

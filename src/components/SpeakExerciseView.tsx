@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { SpeakExercise } from '../data/types'
 import {
-  bestPrefixRatio,
+  bestMatchRatio,
   canRecognizeSpeech,
   createRecognizer,
   isSpokenMatch,
@@ -52,7 +52,7 @@ export default function SpeakExerciseView({
       const last = event.results[event.results.length - 1]
       const transcript = last[0].transcript
       setHeard(transcript)
-      setProgress(bestPrefixRatio(readings, transcript))
+      setProgress(bestMatchRatio(readings, transcript))
       if (last.isFinal) {
         onResult(isSpokenMatch(readings, transcript))
       }

@@ -47,7 +47,7 @@ function buildChoice(cards: Card[], index: number): Exercise {
 
 function buildMeaning(cards: Card[], index: number): Exercise {
   const card = cards[index]
-  if (card.tokens.length <= 1) return buildChoice(cards, index)
+  if (card.tokens.length <= 1 || card.idiomatic) return buildChoice(cards, index)
   const cardGlosses = new Set(card.tokens.map((t) => t.gloss))
   const otherTokens = cards
     .filter((_, i) => i !== index)
@@ -58,6 +58,7 @@ function buildMeaning(cards: Card[], index: number): Exercise {
     [...card.tokens, ...distractorTokens],
     (index * 2) % Math.max(card.tokens.length + distractorTokens.length, 1),
   )
+  const order = card.krOrder ?? card.tokens.map((_, i) => i)
   return {
     type: 'meaningBank',
     prompt: '이 표현의 뜻을 순서대로 조합하세요',
@@ -65,7 +66,7 @@ function buildMeaning(cards: Card[], index: number): Exercise {
     sourceNote: card.note,
     sourcePronunciation: card.krPronunciation,
     tokens,
-    answer: card.tokens.map((t) => t.gloss),
+    answer: order.map((i) => card.tokens[i].gloss),
   }
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { RepeatExercise } from '../data/types'
 import {
-  bestPrefixRatio,
+  bestMatchRatio,
   canRecognizeSpeech,
   createRecognizer,
   isSpokenMatch,
@@ -49,7 +49,7 @@ export default function RepeatExerciseView({
     recognizer.onresult = (event) => {
       const last = event.results[event.results.length - 1]
       const transcript = last[0].transcript
-      setProgress(bestPrefixRatio(readings, transcript))
+      setProgress(bestMatchRatio(readings, transcript))
       if (last.isFinal) {
         onResult(isSpokenMatch(readings, transcript))
       }
