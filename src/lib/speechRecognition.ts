@@ -62,3 +62,25 @@ export function matchedPrefixRatio(target: string, spoken: string): number {
   }
   return i / normTarget.length
 }
+
+/**
+ * Best prefix-match ratio across several acceptable readings of the same
+ * phrase (e.g. a kanji target and its hiragana `note`) — browser speech
+ * recognition for Japanese often transcribes using whichever script it
+ * considers "standard," which doesn't always match how the phrase happens
+ * to be stored, so a single-candidate comparison can under-report progress
+ * even when the learner said it correctly.
+ */
+export function bestPrefixRatio(candidates: string[], spoken: string): number {
+  return Math.max(0, ...candidates.map((c) => matchedPrefixRatio(c, spoken)))
+}
+
+/** Same multi-candidate tolerance as bestPrefixRatio, for the final correct/incorrect check. */
+export function isSpokenMatch(candidates: string[], spoken: string): boolean {
+  const a = normalizeForCompare(spoken)
+  if (a.length === 0) return false
+  return candidates.some((c) => {
+    const b = normalizeForCompare(c)
+    return b.length > 0 && (a.includes(b) || b.includes(a))
+  })
+}

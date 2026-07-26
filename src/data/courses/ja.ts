@@ -11,7 +11,7 @@ const greetings1: Card[] = [
 
 const greetings2: Card[] = [
   { kr: '저는 여행객입니다', target: '私は旅行者です', note: 'わたしはりょこうしゃです', krPronunciation: '와타시와 료코-샤 데스', tokens: [{ text: '私は', gloss: '저는' }, { text: '旅行者', gloss: '여행자' }, { text: 'です', gloss: '~입니다' }] },
-  { kr: '처음 뵙겠습니다', target: 'はじめまして', krPronunciation: '하지메마시테', tokens: [{ text: 'はじめ', gloss: '처음' }, { text: 'まして', gloss: '뵙겠습니다' }] },
+  { kr: '처음 뵙겠습니다', target: '初めまして', note: 'はじめまして', krPronunciation: '하지메마시테', tokens: [{ text: '初め', gloss: '처음' }, { text: 'まして', gloss: '뵙겠습니다' }] },
   { kr: '잘 부탁드립니다', target: 'よろしくお願いします', note: 'よろしくおねがいします', krPronunciation: '요로시쿠 오네가이시마스', tokens: [{ text: 'よろしく', gloss: '잘' }, { text: 'お願いします', gloss: '부탁드립니다' }] },
   { kr: '실례합니다', target: '失礼します', note: 'しつれいします', krPronunciation: '시츠레-시마스', tokens: [{ text: '失礼', gloss: '실례' }, { text: 'します', gloss: '합니다' }] },
   { kr: '괜찮습니다', target: '大丈夫です', note: 'だいじょうぶです', krPronunciation: '다이죠-부 데스', tokens: [{ text: '大丈夫', gloss: '괜찮음' }, { text: 'です', gloss: '~입니다' }] },

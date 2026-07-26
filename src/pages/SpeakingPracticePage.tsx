@@ -6,10 +6,10 @@ import { courseColorClasses } from '../lib/colors'
 import { shuffle } from '../lib/shuffle'
 import { collectCardPool, collectUnlockedLessons } from '../lib/practice'
 import {
+  bestPrefixRatio,
   canRecognizeSpeech,
   createRecognizer,
-  matchedPrefixRatio,
-  normalizeForCompare,
+  isSpokenMatch,
 } from '../lib/speechRecognition'
 import { speak } from '../lib/speech'
 import { playCorrectSound } from '../lib/sound'
@@ -114,19 +114,21 @@ function ScenarioPractice({
     if (!turn) return
     const recognizer = createRecognizer(course.speechLang)
     if (!recognizer) return
+    const readings = turn.note ? [turn.target, turn.note] : [turn.target]
     setListening(true)
     setProgress(0)
     recognizer.onresult = (event) => {
       const last = event.results[event.results.length - 1]
       const transcript = last[0].transcript
-      setProgress(matchedPrefixRatio(turn.target, transcript))
+      setProgress(bestPrefixRatio(readings, transcript))
       if (last.isFinal) {
-        const a = normalizeForCompare(transcript)
-        const b = normalizeForCompare(turn.target)
-        handleMicResult(a.length > 0 && (a.includes(b) || b.includes(a)))
+        handleMicResult(isSpokenMatch(readings, transcript))
       }
     }
-    recognizer.onerror = () => setListening(false)
+    recognizer.onerror = () => {
+      setListening(false)
+      handleMicResult(false)
+    }
     recognizer.onend = () => setListening(false)
     recognizer.start()
   }

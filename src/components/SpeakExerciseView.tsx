@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import type { SpeakExercise } from '../data/types'
 import {
+  bestPrefixRatio,
   canRecognizeSpeech,
   createRecognizer,
-  matchedPrefixRatio,
-  normalizeForCompare,
+  isSpokenMatch,
 } from '../lib/speechRecognition'
 import { playCorrectSound } from '../lib/sound'
 import GaugeText from './GaugeText'
@@ -37,6 +37,11 @@ export default function SpeakExerciseView({
     if (status === 'correct') playCorrectSound()
   }, [status])
 
+  // Browser speech recognition for Japanese often transcribes in kanji even
+  // when the card is stored in hiragana (or vice versa), so match against
+  // every reading we have, not just `answer`.
+  const readings = exercise.note ? [exercise.answer, exercise.note] : [exercise.answer]
+
   function startListening() {
     const recognizer = createRecognizer(lang)
     if (!recognizer) return
@@ -47,15 +52,18 @@ export default function SpeakExerciseView({
       const last = event.results[event.results.length - 1]
       const transcript = last[0].transcript
       setHeard(transcript)
-      setProgress(matchedPrefixRatio(exercise.answer, transcript))
+      setProgress(bestPrefixRatio(readings, transcript))
       if (last.isFinal) {
-        const a = normalizeForCompare(transcript)
-        const b = normalizeForCompare(exercise.answer)
-        const correct = a.length > 0 && (a.includes(b) || b.includes(a))
-        onResult(correct)
+        onResult(isSpokenMatch(readings, transcript))
       }
     }
-    recognizer.onerror = () => setListening(false)
+    recognizer.onerror = () => {
+      setListening(false)
+      // No result came back (e.g. very short words often trip a "no speech
+      // detected" error) — surface it as a failed attempt instead of
+      // leaving the learner stuck with no way to proceed.
+      onResult(false)
+    }
     recognizer.onend = () => setListening(false)
     recognizer.start()
   }
