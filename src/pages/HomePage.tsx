@@ -38,6 +38,13 @@ export default function HomePage() {
         >
           코스 선택하기
         </button>
+        <button
+          type="button"
+          onClick={() => navigate('/vocab')}
+          className="rounded-2xl border-2 border-slate-200 px-6 py-3 font-display font-extrabold text-slate-600"
+        >
+          📘 영단어장 바로가기
+        </button>
       </div>
     )
   }
@@ -112,6 +119,23 @@ export default function HomePage() {
             <span className="text-[10px] text-violet-500">셀프 스피킹</span>
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={() => navigate('/vocab')}
+          className="mb-8 flex w-full items-center gap-3 rounded-2xl border-2 border-amber-200 bg-amber-50 px-5 py-4 text-left transition hover:bg-amber-100 active:scale-[0.99]"
+        >
+          <span className="text-2xl">📘</span>
+          <span className="flex-1">
+            <span className="block font-display text-sm font-extrabold text-amber-700">
+              영단어장
+            </span>
+            <span className="block text-xs text-amber-600">
+              DAY별 영단어 플래시카드 · 뜻 맞히기
+            </span>
+          </span>
+          <span className="text-amber-500">→</span>
+        </button>
 
         {course.units.map((unit) => {
           const isExpanded = expandedUnitId === unit.id
