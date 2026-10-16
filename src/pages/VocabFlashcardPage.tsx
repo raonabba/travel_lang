@@ -128,8 +128,14 @@ export default function VocabFlashcardPage() {
               setRevealed((r) => !r)
             }
           }}
-          className="flex w-full max-w-xs cursor-pointer flex-col items-center gap-3 rounded-3xl border-2 border-slate-200 bg-slate-50 px-6 py-10 text-center shadow-sm"
+          className="relative flex w-full max-w-xs cursor-pointer flex-col items-center gap-3 rounded-3xl border-2 border-slate-200 bg-slate-50 px-6 py-10 text-center shadow-sm"
         >
+          {/* Positioned out of the card's center so a tap here doesn't land on
+              the speaker button and get swallowed by its stopPropagation
+              instead of flipping the card. */}
+          <div className="absolute right-3 top-3">
+            <SpeakerButton text={word.word} lang="en-US" />
+          </div>
           {!revealed ? (
             <>
               <p className="font-display text-3xl font-extrabold text-slate-800">
@@ -139,7 +145,6 @@ export default function VocabFlashcardPage() {
               {word.conjugation && (
                 <p className="text-xs text-slate-400">{word.conjugation}</p>
               )}
-              <SpeakerButton text={word.word} lang="en-US" />
               <p className="mt-4 text-sm font-bold text-slate-400">
                 탭해서 뜻 보기
               </p>

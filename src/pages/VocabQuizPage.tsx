@@ -7,7 +7,6 @@ import { useProgress } from '../state/progress'
 import { speak, canSpeak } from '../lib/speech'
 import SpeakerButton from '../components/SpeakerButton'
 
-const DAY_QUIZ_LENGTH = 12
 const REVIEW_QUIZ_LENGTH = 15
 const VOCAB_COURSE_KEY = 'vocab'
 
@@ -40,7 +39,8 @@ export default function VocabQuizPage() {
       )
     }
     if (!vocabDay) return []
-    return shuffle(vocabDay.words).slice(0, DAY_QUIZ_LENGTH)
+    // No cap — quiz covers every word in the day, not a random subset.
+    return shuffle(vocabDay.words)
   })
 
   const [optionSets] = useState(() =>

@@ -177,16 +177,12 @@ export default function FlashcardPage() {
               setRevealed((r) => !r)
             }
           }}
-          className="flex w-full max-w-xs cursor-pointer flex-col items-center gap-4 rounded-3xl border-2 border-slate-200 bg-slate-50 px-6 py-12 text-center shadow-sm"
+          className="relative flex w-full max-w-xs cursor-pointer flex-col items-center gap-4 rounded-3xl border-2 border-slate-200 bg-slate-50 px-6 py-12 text-center shadow-sm"
         >
-          <p className="font-display text-3xl font-extrabold text-slate-800">
-            {card.target}
-          </p>
-          {card.note && <p className="text-sm text-slate-400">{card.note}</p>}
-          {card.krPronunciation && (
-            <p className="text-sm text-slate-400">[{card.krPronunciation}]</p>
-          )}
-          <div className="flex items-center gap-2">
+          {/* Positioned out of the card's center so a tap here doesn't land on
+              the speaker/shorts buttons and get swallowed by their
+              stopPropagation instead of flipping the card. */}
+          <div className="absolute right-3 top-3 flex items-center gap-2">
             <SpeakerButton text={card.target} lang={course.speechLang} />
             <a
               href={shortsSearchUrl(`${card.target} ${card.kr}`)}
@@ -198,6 +194,13 @@ export default function FlashcardPage() {
               🎬 쇼츠 찾기
             </a>
           </div>
+          <p className="font-display text-3xl font-extrabold text-slate-800">
+            {card.target}
+          </p>
+          {card.note && <p className="text-sm text-slate-400">{card.note}</p>}
+          {card.krPronunciation && (
+            <p className="text-sm text-slate-400">[{card.krPronunciation}]</p>
+          )}
           <div className="mt-4 min-h-10 border-t-2 border-dashed border-slate-200 pt-4">
             {revealed ? (
               <p className="font-display text-xl font-bold text-slate-600">
