@@ -45,6 +45,13 @@ export default function HomePage() {
         >
           📘 영단어장 바로가기
         </button>
+        <button
+          type="button"
+          onClick={() => navigate('/freetalk')}
+          className="rounded-2xl border-2 border-slate-200 px-6 py-3 font-display font-extrabold text-slate-600"
+        >
+          🗣️ 프리토킹 바로가기
+        </button>
       </div>
     )
   }
@@ -135,6 +142,23 @@ export default function HomePage() {
             </span>
           </span>
           <span className="text-amber-500">→</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/freetalk')}
+          className="mb-8 flex w-full items-center gap-3 rounded-2xl border-2 border-sky-200 bg-sky-50 px-5 py-4 text-left transition hover:bg-sky-100 active:scale-[0.99]"
+        >
+          <span className="text-2xl">🗣️</span>
+          <span className="flex-1">
+            <span className="block font-display text-sm font-extrabold text-sky-700">
+              프리토킹
+            </span>
+            <span className="block text-xs text-sky-600">
+              자유롭게 말하면 영어로 교정해드려요
+            </span>
+          </span>
+          <span className="text-sky-500">→</span>
         </button>
 
         {course.units.map((unit) => {

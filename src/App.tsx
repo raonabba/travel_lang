@@ -9,6 +9,7 @@ import SpeakingPracticePage from './pages/SpeakingPracticePage'
 import VocabHomePage from './pages/VocabHomePage'
 import VocabFlashcardPage from './pages/VocabFlashcardPage'
 import VocabQuizPage from './pages/VocabQuizPage'
+import FreeTalkPage from './pages/FreeTalkPage'
 
 function RootRedirect() {
   const { selectedCourseId } = useProgress()
@@ -38,6 +39,7 @@ function App() {
           <Route path="/vocab" element={<VocabHomePage />} />
           <Route path="/vocab/:day/flashcards" element={<VocabFlashcardPage />} />
           <Route path="/vocab/:day/quiz" element={<VocabQuizPage />} />
+          <Route path="/freetalk" element={<FreeTalkPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </HashRouter>
