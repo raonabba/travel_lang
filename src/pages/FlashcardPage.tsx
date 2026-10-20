@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useProgress } from '../state/progress'
 import { getCourse } from '../data/courses'
@@ -8,6 +8,7 @@ import { collectCardPool, collectUnlockedLessons } from '../lib/practice'
 import { speak, canSpeak } from '../lib/speech'
 import { shortsSearchUrl } from '../lib/youtube'
 import SpeakerButton from '../components/SpeakerButton'
+import type { Card } from '../data/types'
 
 const DECK_SIZE = 15
 const BASE_REWARD_XP = 5
@@ -15,28 +16,37 @@ const PERFECT_BONUS_XP = 5
 
 export default function FlashcardPage() {
   const navigate = useNavigate()
-  const { selectedCourseId, isLessonUnlocked, gainXp } = useProgress()
+  const { selectedCourseId, isLessonUnlocked, gainXp, recordCardResult } = useProgress()
   const course = selectedCourseId ? getCourse(selectedCourseId) : undefined
+
+  function freshDeck(): Card[] {
+    if (!course) return []
+    const pool = collectCardPool(collectUnlockedLessons(course, isLessonUnlocked))
+    return shuffle(pool).slice(0, DECK_SIZE)
+  }
 
   // Lazy useState (not useMemo keyed on `course`) so every visit to this
   // page reshuffles — course data is a stable module-level object, so a
   // useMemo dependency on it never re-runs across visits within a session,
   // which was showing the exact same 10 cards every single time.
-  const [deck] = useState(() => {
-    if (!course) return []
-    const pool = collectCardPool(collectUnlockedLessons(course, isLessonUnlocked))
-    return shuffle(pool).slice(0, DECK_SIZE)
-  })
+  const [deck, setDeck] = useState<Card[]>(freshDeck)
 
   const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [knownCount, setKnownCount] = useState(0)
+  const [missed, setMissed] = useState<Card[]>([])
   const [finished, setFinished] = useState(false)
   const [xpGained, setXpGained] = useState(0)
+  // Guards against a fast double-tap on 알아요/몰라요 firing `next` twice for
+  // the same card before React re-renders — the second call would otherwise
+  // still see the stale `index`, pass the bounds check, and push `index`
+  // one past the deck's end, crashing the page on the next render.
+  const advancingRef = useRef(false)
 
   const card = deck[index]
 
   useEffect(() => {
+    advancingRef.current = false
     if (card && course && canSpeak()) {
       speak(card.target, course.speechLang)
     }
@@ -86,7 +96,12 @@ export default function FlashcardPage() {
   }
 
   function next(knew: boolean) {
+    if (advancingRef.current) return
+    advancingRef.current = true
+
+    recordCardResult(course!.id, card.target, knew)
     const nextKnownCount = knownCount + (knew ? 1 : 0)
+    if (!knew) setMissed((m) => [...m, card])
     if (index + 1 >= total) {
       setKnownCount(nextKnownCount)
       finishDeck(nextKnownCount)
@@ -98,6 +113,19 @@ export default function FlashcardPage() {
   }
 
   function restart() {
+    setDeck(freshDeck())
+    setMissed([])
+    setIndex(0)
+    setRevealed(false)
+    setKnownCount(0)
+    setFinished(false)
+    setXpGained(0)
+  }
+
+  function restartWithMissed() {
+    if (missed.length === 0) return
+    setDeck(shuffle(missed))
+    setMissed([])
     setIndex(0)
     setRevealed(false)
     setKnownCount(0)
@@ -125,6 +153,15 @@ export default function FlashcardPage() {
           </div>
         </div>
         <div className="mt-4 flex w-full max-w-xs flex-col gap-3">
+          {missed.length > 0 && (
+            <button
+              type="button"
+              onClick={restartWithMissed}
+              className="w-full rounded-2xl bg-rose-500 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
+            >
+              모르는 단어만 다시 복습 ({missed.length}개)
+            </button>
+          )}
           <button
             type="button"
             onClick={restart}

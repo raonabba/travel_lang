@@ -1,24 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getVocabDay } from '../data/vocab'
+import { getVocabDay, type VocabWord } from '../data/vocab'
 import { shuffle } from '../lib/shuffle'
 import { speak, canSpeak } from '../lib/speech'
+import { useProgress } from '../state/progress'
 import SpeakerButton from '../components/SpeakerButton'
+
+const VOCAB_COURSE_KEY = 'vocab'
 
 export default function VocabFlashcardPage() {
   const navigate = useNavigate()
   const { day } = useParams()
+  const { recordCardResult } = useProgress()
   const vocabDay = getVocabDay(Number(day))
 
-  const [deck] = useState(() => (vocabDay ? shuffle(vocabDay.words) : []))
+  const [deck, setDeck] = useState(() => (vocabDay ? shuffle(vocabDay.words) : []))
   const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [knownCount, setKnownCount] = useState(0)
+  const [missed, setMissed] = useState<VocabWord[]>([])
   const [finished, setFinished] = useState(false)
+  // Guards against a fast double-tap on 알아요/몰라요 firing `next` twice for
+  // the same card before React re-renders — the second call would otherwise
+  // still see the stale `index`, pass the bounds check, and push `index`
+  // one past the deck's end, crashing the page on the next render.
+  const advancingRef = useRef(false)
 
   const word = deck[index]
 
   useEffect(() => {
+    advancingRef.current = false
     if (word && canSpeak()) speak(word.word, 'en-US')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index, word])
@@ -41,7 +52,12 @@ export default function VocabFlashcardPage() {
   const total = deck.length
 
   function next(knew: boolean) {
+    if (advancingRef.current) return
+    advancingRef.current = true
+
+    recordCardResult(VOCAB_COURSE_KEY, word.id, knew)
     const nextKnownCount = knownCount + (knew ? 1 : 0)
+    if (!knew) setMissed((m) => [...m, word])
     if (index + 1 >= total) {
       setKnownCount(nextKnownCount)
       setFinished(true)
@@ -53,6 +69,18 @@ export default function VocabFlashcardPage() {
   }
 
   function restart() {
+    setDeck(vocabDay ? shuffle(vocabDay.words) : [])
+    setMissed([])
+    setIndex(0)
+    setRevealed(false)
+    setKnownCount(0)
+    setFinished(false)
+  }
+
+  function restartWithMissed() {
+    if (missed.length === 0) return
+    setDeck(shuffle(missed))
+    setMissed([])
     setIndex(0)
     setRevealed(false)
     setKnownCount(0)
@@ -72,6 +100,15 @@ export default function VocabFlashcardPage() {
           </p>
         </div>
         <div className="mt-4 flex w-full max-w-xs flex-col gap-3">
+          {missed.length > 0 && (
+            <button
+              type="button"
+              onClick={restartWithMissed}
+              className="w-full rounded-2xl bg-rose-500 py-3 font-display font-extrabold text-white shadow-[0_4px_0_0_rgba(0,0,0,0.15)] transition active:translate-y-1 active:shadow-none"
+            >
+              모르는 단어만 다시 복습 ({missed.length}개)
+            </button>
+          )}
           <button
             type="button"
             onClick={restart}
